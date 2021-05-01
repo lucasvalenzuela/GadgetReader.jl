@@ -1,7 +1,8 @@
+__precompile__()
 module GadgetGalaxies
 
-export f
+include("snapshot.jl")
 
-f(x) = x^2
+export Snapshot
 
 end
