@@ -2,5 +2,5 @@ using GadgetGalaxies
 using Test
 
 @testset "GadgetGalaxies.jl" begin
-    # Write your tests here.
+    f(2) == 4
 end

@@ -1,5 +1,7 @@
 module GadgetGalaxies
 
-# Write your package code here.
+export f
+
+f(x) = x^2
 
 end
