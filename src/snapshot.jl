@@ -23,8 +23,8 @@ Convenience method for creating a `Snapshot` from the path to a simulated box an
 Setting `snapbase` or `subbase` to `false` sets the respective file base to `nothing`.
 
 The formats used are the following, for `snapbase` and `subbase`, respectively:
-- snapdir_XXX/snap_XXX
-- groups_XXX/sub_XXX
+- `snapdir_XXX/snap_XXX`
+- `groups_XXX/sub_XXX`
 """
 function Snapshot(path_box, snap::Integer; snapbase::Bool=true, subbase::Bool=true)
     _snapbase = snapbase ? get_snapbase(path_box, snap) : nothing
