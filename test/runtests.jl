@@ -49,6 +49,8 @@ GG = GadgetGalaxies
         p[:pos] = [6 5; 4 3; 2 1]
         @test p.pos == [6 5; 4 3; 2 1]
 
+        @test_throws ErrorException p[:type] = :dm
+
 
         snapshot = Snapshot("box", 10)
         dm = GG.Particles(:dm, Dict())
@@ -77,5 +79,7 @@ GG = GadgetGalaxies
 
         g.stars = p
         @test g[:stars] === p
+
+        @test_throws ErrorException g[:isub] = 1235
     end
 end
