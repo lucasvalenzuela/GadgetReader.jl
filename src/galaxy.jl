@@ -64,7 +64,6 @@ Returns [`Vector`](@ref) of particle properties saved in `particles` (e.g. `[:id
 """
 particleproperties(obj::Particles) = keys(obj.properties) .|> lowercase .|> Symbol
 
-Base.getindex(obj::Particles, sym::Symbol) = Base.getproperty(obj, sym)
 
 
 
