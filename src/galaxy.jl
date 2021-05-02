@@ -50,10 +50,6 @@ function Base.setproperty!(obj::Particles, sym::Symbol, val)
     end
 end
 
-function Base.propertynames(obj::Particles)
-    return [:type; particleproperties(obj)]
-end
-
 Base.getindex(obj::Particles, sym::Symbol) = Base.getproperty(obj, sym)
 Base.setindex!(obj::Particles, val, sym::Symbol) = Base.setproperty!(obj, sym, val)
 
@@ -64,6 +60,9 @@ Returns [`Vector`](@ref) of particle properties saved in `particles` (e.g. `[:id
 """
 particleproperties(obj::Particles) = keys(obj.properties) .|> lowercase .|> Symbol
 
+function Base.propertynames(obj::Particles)
+    return [:type; particleproperties(obj)]
+end
 
 
 
