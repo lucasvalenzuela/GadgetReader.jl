@@ -48,6 +48,7 @@ GG = GadgetGalaxies
 
         p[:pos] = [6 5; 4 3; 2 1]
         @test p.pos == [6 5; 4 3; 2 1]
+        @test p.pos === p[:pos]
 
         @test_throws ErrorException p[:type] = :dm
 
