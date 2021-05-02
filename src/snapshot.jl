@@ -2,7 +2,7 @@
     Snapshot(snapbase, subbase)
 
 Returns a Snapshot from a `snapbase` and a `subbase`, which can also be `nothing`.
-Both can be files or the base part of files ending with .0, .1, etc.
+Both can be files or the base part of files ending with `.0`, `.1`, etc.
 """
 struct Snapshot{T}
     snapbase::Union{T,Nothing}
