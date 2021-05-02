@@ -1,8 +1,13 @@
 __precompile__()
 module GadgetGalaxies
 
-include("snapshot.jl")
+using GadgetIO
 
-export Snapshot
+include("snapshot.jl")
+include("galaxy.jl")
+
+# structs
+export Snapshot,
+       Galaxy
 
 end

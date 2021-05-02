@@ -3,6 +3,9 @@ uuid = "848b0a34-0b0f-40ed-a569-79317c73c061"
 authors = ["Lucas Valenzuela <lucasvalenzuela@users.noreply.github.com>"]
 version = "0.1.0"
 
+[deps]
+GadgetIO = "826b50da-1eb7-48f3-bd4b-d2350582c309"
+
 [compat]
 julia = "1.6"
 
