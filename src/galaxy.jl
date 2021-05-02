@@ -11,9 +11,8 @@ The Dict has String keys, which are set to all uppercase by default.
 The properties are accessible via `particles.prop` (case insensitive).
 
 # Examples
-```
-julia> p = GadgetGalaxies.Particles(:stars, Dict("ID"=>[1, 2], "MASS"=>[1e11, 2e11]))
-[...]
+```jldoctest
+julia> p = GadgetGalaxies.Particles(:stars, Dict("ID"=>[1, 2], "MASS"=>[1e11, 2e11]));
 
 julia> p.id
 2-element Vector{Int64}:
@@ -87,12 +86,10 @@ The particles are accessible via `galaxy.particletype` or `galaxy[:particletype]
 (see [`particles`](@ref) for typical types).
 
 # Examples
-```
-julia> p = GadgetGalaxies.Particles(:stars, Dict("ID"=>[1, 2], "MASS"=>[1e11, 2e11]))
-[...]
+```jldoctest
+julia> p = GadgetGalaxies.Particles(:stars, Dict("ID"=>[1, 2], "MASS"=>[1e11, 2e11]));
 
-julia> g = Galaxy(Snapshot("box", 13), 1532, nothing, Dict(:stars=>p))
-[...]
+julia> g = Galaxy(Snapshot("box", 13), 1532, nothing, Dict(:stars=>p));
 
 julia> g.stars === p
 true
