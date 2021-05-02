@@ -12,7 +12,7 @@ The properties are accessible via `particles.prop` (case insensitive).
 
 # Examples
 ```jldoctest
-julia> p = Particles(:stars, Dict("ID"=>[1, 2], "MASS"=>[1e11, 2e11]))
+julia> p = GadgetGalaxies.Particles(:stars, Dict("ID"=>[1, 2], "MASS"=>[1e11, 2e11]))
 [Struct Output]
 
 julia> p.id
@@ -88,7 +88,7 @@ The particles are accessible via `galaxy.particletype` or `galaxy[:particletype]
 
 # Examples
 ```jldoctest
-julia> p = Particles(:stars, Dict("ID"=>[1, 2], "MASS"=>[1e11, 2e11]))
+julia> p = GadgetGalaxies.Particles(:stars, Dict("ID"=>[1, 2], "MASS"=>[1e11, 2e11]))
 [...]
 
 julia> g = Galaxy(Snapshot("box", 13), 1532, nothing, Dict(:stars=>p))
