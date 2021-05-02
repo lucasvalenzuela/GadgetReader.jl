@@ -17,7 +17,7 @@ Convenience method for creating a `Snapshot` where one of the base files does no
 Snapshot(; snapbase=nothing, subbase=nothing) = Snapshot(snapbase, subbase)
 
 """
-    Snapshot(path_box, snap::Integer; snapbase::Bool=true, subbase::Bool=true)
+    Snapshot(path_box, snap::Integer; snapbase=true, subbase=true)
 
 Convenience method for creating a `Snapshot` from the path to a simulated box and a snapshot number.
 Setting `snapbase` or `subbase` to `false` sets the respective file base to `nothing`.

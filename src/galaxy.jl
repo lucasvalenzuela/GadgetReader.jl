@@ -5,8 +5,8 @@
 """
     Particles(type::Symbol, properties::Dict{String})
 
-Particles of a type (typically :stars, :dm, :gas, or :bh) with their properties in a `Dict`.
-The Dict has String keys, which are set to all uppercase by default.
+Particles of a type (typically `:stars`, `:dm`, `:gas`, or `:bh`) with their properties in a [`Dict`](@ref).
+The [`Dict`](@ref) has [`String`](@ref) keys, which are set to all uppercase by default.
 
 The properties are accessible via `particles.prop` (case insensitive).
 
@@ -60,7 +60,7 @@ Base.setindex!(obj::Particles, val, sym::Symbol) = Base.setproperty!(obj, sym, v
 """
     particleproperties(particles::Particles)
 
-Returns `Vector` of particle properties saved in `particles` (e.g. [:id, :pos, :vel]).
+Returns [`Vector`](@ref) of particle properties saved in `particles` (e.g. `[:id, :pos, :vel]`).
 """
 particleproperties(obj::Particles) = keys(obj.properties) .|> lowercase .|> Symbol
 
@@ -78,12 +78,13 @@ Base.getindex(obj::Particles, sym::Symbol) = Base.getproperty(obj, sym)
            subid::Union{HaloID,Nothing},
            particles::Dict{Symbol,Particles})
 
-Galaxy of a given `snapshot` with the zero-based subhalo index `isub` with [`particles`](@ref).
+Galaxy of a given `snapshot` ([`Snapshot`](@ref)) with the zero-based subhalo index `isub`
+with [`Particles`](@ref).
 Including `subid` (containing information on the exact position in the subfind files) makes
 accessing properties of the galaxy faster than when only having `isub`.
 
 The particles are accessible via `galaxy.particletype` or `galaxy[:particletype]`
-(see [`particles`](@ref) for typical types).
+(see [`Particles`](@ref) for typical types).
 
 # Examples
 ```jldoctest
@@ -103,12 +104,12 @@ struct Galaxy
 end
 
 """
-    Galaxy(snapshot::Snapshot, isub::Integer[, get_id=true])
+    Galaxy(snapshot::Snapshot, isub[, get_id=true])
 
 Convenience method for creating a `Galaxy` with only a `snapshot` and a subfind id.
-Will try to read "MSUB" to extract the `HaloID` if `get_id` is `true`.
+Will try to read "MSUB" to extract the [`HaloID`](@ref) if `get_id` is `true`.
 
-Particles can still be added after initializing the halo by calling for example `galaxy.stars = [...]`.
+[`Particles`](@ref) can still be added after initializing the halo by calling for example `galaxy.stars = [...]`.
 """
 function Galaxy(snapshot::Snapshot, isub::Integer, get_id::Bool)
     if get_id
@@ -148,7 +149,7 @@ Base.setindex!(obj::Galaxy, val, sym::Symbol) = Base.setproperty!(obj, sym, val)
 """
     particletypes(galaxy::Galaxy)
 
-Returns `Vector` of particle types saved in `galaxy` (e.g. [:stars, :dm]).
+Returns a `Vector` of particle types saved in `galaxy` (e.g. `[:stars, :dm]`).
 """
 particletypes(obj::Galaxy) = keys(obj.particles) |> collect
 
