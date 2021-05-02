@@ -13,7 +13,7 @@ The properties are accessible via `particles.prop` (case insensitive).
 # Examples
 ```jldoctest
 julia> p = GadgetGalaxies.Particles(:stars, Dict("ID"=>[1, 2], "MASS"=>[1e11, 2e11]))
-[Struct Output]
+[...]
 
 julia> p.id
 2-element Vector{Int64}:
