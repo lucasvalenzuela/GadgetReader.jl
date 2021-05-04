@@ -29,7 +29,7 @@ function read_halo!(
     snapbase = string(g.snapshot.snapbase)
     subbase = string(g.snapshot.subbase)
 
-    " Provides properties `h0`, `z`, `time`, `omega_0`, `omega_l`, `num_files` "
+    # Provides properties `h0`, `z`, `time`, `omega_0`, `omega_l`, `num_files`
     h = read_header(GadgetIO.select_file(subbase, 0))
 
     # get global halo properties
