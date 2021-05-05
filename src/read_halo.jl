@@ -12,7 +12,24 @@ function shift_across_box_border(x::Number, x₀::Number, boxsize::Number, boxsi
     return x
 end
 
+"""
+    read_halo!(g::Galaxy; kwargs...)
 
+Reads particles of a [`Galaxy`](@ref).
+
+# Keywords
+- `radius::Union{Real,Nothing}=nothing`: if `nothing`, the half-mass radius "RHMS"
+- `rad_scale::Real=1`: read particles within `rad_scale * radius` of halo position
+- `units::Symbol=:full`: `:full` for units as `Unitful` quantities, `:physical` for values converted
+  to physical units (kpc, km/s, solar metallicities etc.), `:sim` for values in simulation units
+- `use_keys::Bool=true`: if Peano-Hilbert keys should be used if possible
+- `verbose::Bool=false`: verbose output
+- `props::Tuple=(
+       (:gas, ["POS", "VEL", "MASS", "TEMP", "SFR", "Zs"]),
+       (:dm, ["POS", "VEL"]),
+       (:stars, ["POS", "VEL", "MASS", "AGE", "Zs", "iM"]),
+   )`: particle types (see [`Particles`](@ref)) and properties to be read
+"""
 function read_halo!(
     g::Galaxy;
     radius::Union{Real,Nothing}=nothing,
@@ -73,6 +90,11 @@ function read_halo!(
 end
 
 
+"""
+    read_redshift(snapshot::Snapshot)
+
+Returns the redshift `z` from the first snapfile's header.
+"""
 function read_redshift(snapshot::Snapshot)
     h = read_subfind_header(GadgetIO.select_file(snapshot.subbase |> string, 0))
     return h.z

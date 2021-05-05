@@ -5,8 +5,8 @@
 """
     Particles(type::Symbol, properties::Dict{String})
 
-Particles of a type (typically `:stars`, `:dm`, `:gas`, or `:bh`) with their properties in a [`Dict`](@ref).
-The [`Dict`](@ref) has [`String`](@ref) keys, which are set to all uppercase by default, with exception
+Particles of a type (typically `:stars`, `:dm`, `:gas`, or `:bh`) with their properties in a `Dict`.
+The `Dict` has `String` keys, which are set to all uppercase by default, with exception
 of `iM` and `Zs`.
 
 The properties are accessible via `particles.prop` (case insensitive).
@@ -89,7 +89,7 @@ const _particle_type_id = Dict(:gas => 0, :dm => 1, :stars => 4, :bh => 5)
     particle_type_id(type::Symbol)
 
 Returns the Gadget particle type from a particle `Symbol`
-(currently `:gas`, `:dm`, `:stars`,and `bh`).
+(currently `:gas`, `:dm`, `:stars`, and `:bh`).
 """
 particle_type_id(type::Symbol) = _particle_type_id[type]
 
@@ -134,7 +134,7 @@ end
     Galaxy(snapshot::Snapshot, isub[, get_id=true])
 
 Convenience method for creating a `Galaxy` with only a `snapshot` and a subfind id.
-Will try to read "MSUB" to extract the [`HaloID`](@ref) if `get_id` is `true`.
+Will try to read "MSUB" to extract the  if `get_id` is `true`.
 
 [`Particles`](@ref) can still be added after initializing the halo by calling for example `galaxy.stars = [...]`.
 """
