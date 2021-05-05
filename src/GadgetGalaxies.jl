@@ -14,6 +14,7 @@ include("units.jl")
 # structs
 export Snapshot,
        Galaxy,
+       GalaxyGroup,
 
        particle_type_id,
 

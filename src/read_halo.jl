@@ -31,7 +31,7 @@ Reads particles of a [`Galaxy`](@ref).
    )`: particle types (see [`Particles`](@ref)) and properties to be read
 """
 function read_halo!(
-    g::Galaxy;
+    g::AbstractGalaxy;
     radius::Union{Real,Nothing}=nothing,
     rad_scale::Real=1,
     units::Symbol=:full,
@@ -50,8 +50,8 @@ function read_halo!(
     h = read_header(GadgetIO.select_file(subbase, 0))
 
     # get global halo properties
-    halo_pos = read_halo_prop(subbase, g.subid, "SPOS"; verbose)
-    halo_vel = read_halo_prop(subbase, g.subid, "SVEL"; verbose)
+    halo_pos = read_galaxy_pos(g; verbose)
+    halo_vel = read_galaxy_vel(g; verbose)
 
     # handle particles for different types
     Threads.@threads for (ptype, blocks) in props
@@ -61,9 +61,9 @@ function read_halo!(
             snapbase,
             blocks,
             subbase,
-            g.subid;
+            getid(g);
             parttype=ptype_id,
-            halo_type=2,
+            halo_type=get_subfind_type(g),
             rad_scale,
             use_keys,
             verbose,
@@ -98,4 +98,21 @@ Returns the redshift `z` from the first snapfile's header.
 function read_redshift(snapshot::Snapshot)
     h = read_subfind_header(GadgetIO.select_file(snapshot.subbase |> string, 0))
     return h.z
+end
+
+
+function read_galaxy_pos(g::Galaxy; verbose::Bool=false)
+    read_halo_prop(string(g.snapshot.subbase), g.subid, "SPOS"; verbose)
+end
+function read_galaxy_pos(g::GalaxyGroup; verbose::Bool=false)
+    read_halo_prop(string(g.snapshot.subbase), g.groupid, "GPOS"; verbose)
+end
+function read_galaxy_vel(g::Galaxy; verbose::Bool=false)
+    read_halo_prop(string(g.snapshot.subbase), g.subid, "SVEL"; verbose)
+end
+function read_galaxy_vel(g::GalaxyGroup; verbose::Bool=false)
+    subbase = string(g.snapshot.subbase)
+    ifsub = read_halo_prop(subbase, g.groupid, "FSUB"; verbose)
+    nfiles = read_header(GadgetIO.select_file(subbase, 0)).num_files
+    read_halo_prop_and_id(string(g.snapshot.subbase), ifsub, "SVEL", nfiles; verbose)[1]
 end
