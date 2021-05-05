@@ -63,7 +63,7 @@ convert_units_physical, convert_units_physical!, convert_units_full
 
 for (key, factor, unit, plural, eq) in [
     ("pos", :(1 / (h.h0 * (h.z + 1))), :(u"kpc"), "positions", raw"x \to x/(h_0 (z+1)))"),
-    ("vel", :(1 / sqrt(h.z + 1)), :(u"km/s"), "velocities", raw"v \to v/\sqrt(z+1))"),
+    ("vel", :(1 / sqrt(h.z + 1)), :(u"km/s"), "velocities", raw"v \to v/\sqrt{z+1})"),
     ("temp", :(1), :(u"K"), "temperatures", raw"T \to T"),
     ("mass", :(1e10 / h.h0), :(u"Msun"), "masses", raw"m \to m \times 10^{10} / h_0"),
 ]
