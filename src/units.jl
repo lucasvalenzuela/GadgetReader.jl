@@ -111,7 +111,9 @@ which can take any of the following values: `:pos`, `:vel`, `:temp`, `:mass`, `:
 
 Full returns values in `Unitful` quantities, whereas physical returns the physical value without unit.
 """
-convert_units_physical, convert_units_physical!, convert_units_full
+convert_units_physical,
+#convert_units_physical!,
+convert_units_full
 
 for (key, factor, unit, plural, eq) in [
     ("pos", :(1 / (h.h0 * (h.z + 1))), :(u"kpc"), "positions", raw"x \to x/(h_0 (z+1)))"),
