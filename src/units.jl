@@ -109,7 +109,7 @@ end
 Converts simulation values to the respective physical values, depending on `prop`,
 which can take any of the following values: `:pos`, `:vel`, `:temp`, `:mass`, `:age`.
 
-Full returns values in `Unitful` quantities, whereas physical returns the phyiscal value without unit.
+Full returns values in `Unitful` quantities, whereas physical returns the physical value without unit.
 """
 convert_units_physical, convert_units_physical!, convert_units_full
 
