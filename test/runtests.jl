@@ -288,6 +288,7 @@ GG = GadgetGalaxies
         warn = "The quantity GRNR is returned in simulation units"
         @test_logs (:info, info) (:warn, warn) read_galaxy_prop(g, "GRNR"; verbose=true)
         @test GG.convert_units_subfind_prop(0.1, "SAGE", h) ≈ 1.06078Unitful.Gyr rtol = 1e-5
+        @test GG.convert_units_subfind_prop(0.1, "SSFR", h) == 0.1u"Msun"/Unitful.yr
 
         @test read_galaxy_pos(g) == read_galaxy_pos(gr)
         @test read_galaxy_vel(g) == read_galaxy_vel(gr)
