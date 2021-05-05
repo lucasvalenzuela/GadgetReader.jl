@@ -83,8 +83,8 @@ GG = GadgetGalaxies
         g.dm = dm
 
         @test g.snapshot === snapshot
-        @test g.isub === 1234
-        @test isnothing(g.subid)
+        @test GG.getind(g) === g.isub === 1234
+        @test isnothing(g.subid) && isnothing(GG.getid(g))
         @test g.stars === g[:stars] === p
         @test g.dm === g[:dm] === dm
         @test g.particles[:stars] === g.stars
@@ -115,12 +115,53 @@ GG = GadgetGalaxies
         snapshot = Snapshot("snap_002", "sub_002")
         g = Galaxy(snapshot, 0)
         @test g.subid == HaloID(0, 1)
+
+        # galaxy group
+        snapshot = Snapshot("box", 10)
+
+        gr = GalaxyGroup(snapshot, 1234, nothing, Dict(:stars => p))
+        gr.dm = dm
+
+        @test gr.snapshot === snapshot
+        @test GG.getind(gr) === gr.igroup === 1234
+        @test isnothing(gr.groupid) && isnothing(GG.getid(gr))
+        @test gr.stars === gr[:stars] === p
+        @test gr.dm === gr[:dm] === dm
+        @test gr.particles[:stars] === gr.stars
+        @test gr.particles[:dm] === gr.dm
+        @test issetequal(keys(gr), [:stars, :dm])
+        @test values(gr) === values(gr.particles)
+        @test issetequal(propertynames(gr), [:snapshot, :igroup, :groupid, :stars, :dm])
+
+        gr[:bh] = dm
+        @test gr.bh === dm
+
+        gr = GalaxyGroup(snapshot, 1234, false)
+        @test gr.snapshot === snapshot
+        @test gr.igroup === 1234
+        @test isnothing(gr.groupid)
+        @test isempty(keys(gr))
+        @test gr.igroup === 1234
+
+        gr.stars = p
+        @test gr[:stars] === p
+
+        @test_throws ErrorException gr[:igroup] = 1235
+
+        io = IOBuffer()
+        show(io, "text/plain", gr)
+        @test String(take!(io)) == "GalaxyGroup igroup 1234\nstars: 2 Particles\n ID MASS Zs iM\n"
+
+        snapshot = Snapshot("snap_002", "sub_002")
+        gr = GalaxyGroup(snapshot, 0)
+        @test gr.groupid == HaloID(0, 1)
     end
 
 
     # create real snapshot for rest of tests
     snapshot = Snapshot("snap_002", "sub_002")
     g = Galaxy(snapshot, 0)
+    gr = GalaxyGroup(snapshot, 0)
     h = read_header(GadgetIO.select_file(snapshot.subbase, 0))
 
     @testset "Units" begin
@@ -131,30 +172,30 @@ GG = GadgetGalaxies
         a = 0.277777
         b = a * u"kpc"
         @test convert_units_pos(v, h, :sim) == v
-        @test convert_units_pos(v, h, :physical) ≈ a rtol=1e-5
-        @test convert_units_physical_pos(v, h) ≈ a rtol=1e-5
+        @test convert_units_pos(v, h, :physical) ≈ a rtol = 1e-5
+        @test convert_units_physical_pos(v, h) ≈ a rtol = 1e-5
         @test convert_units_physical_pos(v, h) |> typeof === Float64
-        @test convert_units_physical_pos(w, h) ≈ a rtol=1e-5
+        @test convert_units_physical_pos(w, h) ≈ a rtol = 1e-5
         @test convert_units_physical_pos(w, h) |> typeof === Float32
-        @test convert_units_physical_pos(vs, h)[1] ≈ a rtol=1e-5
+        @test convert_units_physical_pos(vs, h)[1] ≈ a rtol = 1e-5
         @test convert_units_physical_pos(vs, h) |> eltype === Float64
-        @test convert_units_physical_pos(ws, h)[1] .≈ a rtol=1e-5
+        @test convert_units_physical_pos(ws, h)[1] .≈ a rtol = 1e-5
         @test convert_units_physical_pos(ws, h) |> eltype === Float32
-        @test convert_units_pos(v, h, :full) ≈ b rtol=1e-5
-        @test convert_units_full_pos(v, h) ≈ b rtol=1e-5
+        @test convert_units_pos(v, h, :full) ≈ b rtol = 1e-5
+        @test convert_units_full_pos(v, h) ≈ b rtol = 1e-5
         @test convert_units_full_pos(v, h) |> typeof <: Quantity{Float64}
-        @test convert_units_full_pos(w, h) ≈ b rtol=1e-5
+        @test convert_units_full_pos(w, h) ≈ b rtol = 1e-5
         @test convert_units_full_pos(w, h) |> typeof <: Quantity{Float32}
-        @test convert_units_full_pos(vs, h)[1] ≈ b rtol=1e-5
+        @test convert_units_full_pos(vs, h)[1] ≈ b rtol = 1e-5
         @test convert_units_full_pos(vs, h) |> eltype <: Quantity{Float64}
-        @test convert_units_full_pos(ws, h)[1] .≈ b rtol=1e-5
+        @test convert_units_full_pos(ws, h)[1] .≈ b rtol = 1e-5
         @test convert_units_full_pos(ws, h) |> eltype <: Quantity{Float32}
 
         vs2, ws2 = copy(vs), copy(ws)
         convert_units_physical_pos!(vs2, h)
-        @test vs2[1] ≈ a rtol=1e-5
+        @test vs2[1] ≈ a rtol = 1e-5
         convert_units_physical_pos!(ws2, h)
-        @test ws2[1] ≈ a rtol=1e-5
+        @test ws2[1] ≈ a rtol = 1e-5
 
         # TODO: perhaps also test vel, temp, mass
 
@@ -170,23 +211,23 @@ GG = GadgetGalaxies
         a = 1.06078
         b = a * Unitful.Gyr
         @test convert_units_age(v, h, :sim) == v
-        @test convert_units_age(v, h, :physical) ≈ a rtol=1e-5
-        @test convert_units_physical_age(v, h) ≈ a rtol=1e-5
+        @test convert_units_age(v, h, :physical) ≈ a rtol = 1e-5
+        @test convert_units_physical_age(v, h) ≈ a rtol = 1e-5
         @test convert_units_physical_age(v, h) |> typeof === Float64
-        @test convert_units_physical_age(w, h) ≈ a rtol=1e-5
+        @test convert_units_physical_age(w, h) ≈ a rtol = 1e-5
         @test convert_units_physical_age(w, h) |> typeof === Float64
-        @test convert_units_physical_age(vs, h)[1] ≈ a rtol=1e-5
+        @test convert_units_physical_age(vs, h)[1] ≈ a rtol = 1e-5
         @test convert_units_physical_age(vs, h) |> eltype === Float64
-        @test convert_units_physical_age(ws, h)[1] ≈ a rtol=1e-5
+        @test convert_units_physical_age(ws, h)[1] ≈ a rtol = 1e-5
         @test convert_units_physical_age(ws, h) |> eltype === Float64
-        @test convert_units_age(v, h, :full) ≈ b rtol=1e-5
-        @test convert_units_full_age(v, h) ≈ b rtol=1e-5
+        @test convert_units_age(v, h, :full) ≈ b rtol = 1e-5
+        @test convert_units_full_age(v, h) ≈ b rtol = 1e-5
         @test convert_units_full_age(v, h) |> typeof <: Quantity{Float64}
-        @test convert_units_full_age(w, h) ≈ b rtol=1e-5
+        @test convert_units_full_age(w, h) ≈ b rtol = 1e-5
         @test convert_units_full_age(w, h) |> typeof <: Quantity{Float64}
-        @test convert_units_full_age(vs, h)[1] ≈ b rtol=1e-5
+        @test convert_units_full_age(vs, h)[1] ≈ b rtol = 1e-5
         @test convert_units_full_age(vs, h) |> eltype <: Quantity{Float64}
-        @test convert_units_full_age(ws, h)[1] ≈ b rtol=1e-5
+        @test convert_units_full_age(ws, h)[1] ≈ b rtol = 1e-5
         @test convert_units_full_age(ws, h) |> eltype <: Quantity{Float64}
         @test convert_units_physical(vs, :age, h) == convert_units_physical_age(vs, h)
         @test convert_units_physical!(copy(vs), :age, h) == convert_units_physical_age(vs, h)
@@ -194,13 +235,13 @@ GG = GadgetGalaxies
 
         vs2, ws2 = copy(vs), copy(ws)
         convert_units_physical_age!(vs2, h)
-        @test vs2[1] ≈ a rtol=1e-5
+        @test vs2[1] ≈ a rtol = 1e-5
         convert_units_physical_age!(ws2, h)
-        @test ws2[1] ≈ a rtol=1e-5
+        @test ws2[1] ≈ a rtol = 1e-5
 
         zs, mass = ones(11, 2), [42, 34]
         a = 24.0731
-        @test convert_units_solar_metallicity(zs, mass)[1] ≈ a rtol=1e-5
+        @test convert_units_solar_metallicity(zs, mass)[1] ≈ a rtol = 1e-5
 
 
         p = GG.Particles(:stars, Dict())
@@ -232,11 +273,29 @@ GG = GadgetGalaxies
     end
 
     @testset "Read" begin
-        @test read_redshift(snapshot) ≈ 4 rtol=1e-5
+        @test read_redshift(snapshot) ≈ 4 rtol = 1e-5
+        @test read_header_particle_mass(snapshot, :dm, :physical) == 0
+        @test read_header_particle_mass(snapshot, :dm) == 0u"Msun"
+        @test read_header_particle_mass(snapshot, :gas) == 0u"Msun"
+        @test read_galaxy_prop(g, "MSUB", :sim) ≈ 9.17776 rtol = 1e-5
+        @test read_galaxy_prop(g, "MSUB", :physical) ≈ 1.27468f11 rtol = 1e-5
+        @test read_galaxy_prop(g, "MSUB", :full) ≈ 1.27468f11u"Msun" rtol = 1e-5
+        @test read_galaxy_prop(g, "SPOS") |> length == 3
+        @test read_galaxy_prop(g, "SPOS")[1] ≈ -413.854u"kpc" rtol = 1e-5
+        @test read_galaxy_prop(g, "SVEL")[1] ≈ 83.1962u"km/s" rtol = 1e-5
+        @test read_galaxy_prop(g, "GRNR") == 0
+        info = "Reading property GRNR of halo HaloID(0, 1)"
+        warn = "The quantity GRNR is returned in simulation units"
+        @test_logs (:info, info) (:warn, warn) read_galaxy_prop(g, "GRNR"; verbose=true)
+        @test GG.convert_units_subfind_prop(0.1, "SAGE", h) ≈ 1.06078Unitful.Gyr rtol = 1e-5
+
+        @test read_galaxy_pos(g) == read_galaxy_pos(gr)
+        @test read_galaxy_vel(g) == read_galaxy_vel(gr)
+        @test is_main_halo(g)
     end
 
     @testset "Read Halo" begin
-        props = ((:dm, ["POS"]),(:gas, ["MASS", "VEL"]))
+        props = ((:dm, ["POS"]), (:gas, ["MASS", "VEL"]))
         read_halo!(g; use_keys=false, props, units=:full)
 
         @test typeof(g) <: Galaxy
@@ -246,7 +305,18 @@ GG = GadgetGalaxies
         io = IOBuffer()
         show(io, "text/plain", g)
         @test String(take!(io)) ==
-               "Galaxy at z=4.0\n isub 0\ndm: 7 Particles\n ID POS\ngas: 20 Particles\n ID MASS VEL\n"
+              "Galaxy at z=4.0\n isub 0\ndm: 7 Particles\n ID POS\ngas: 20 Particles\n ID MASS VEL\n"
+
+        read_halo!(gr; use_keys=false, props, units=:full)
+
+        @test typeof(gr) <: GalaxyGroup
+        @test typeof(gr.dm) <: GG.Particles
+        @test typeof(gr.gas) <: GG.Particles
+
+        io = IOBuffer()
+        show(io, "text/plain", gr)
+        @test String(take!(io)) ==
+              "GalaxyGroup at z=4.0\n igroup 0\ndm: 70 Particles\n ID POS\ngas: 76 Particles\n ID MASS VEL\n"
     end
 
     @info "deleting test data..."

@@ -85,9 +85,8 @@ function read_halo!(
         # read particle mass if available in header mass array
         if "MASS" ∉ keys(p)
             p_mass = read_header_particle_mass(g.snapshot, ptype, units)
-            if ustrip(p_mass) > 0
-                p.mass = p_mass
-            end
+            # ustrip removes any potential unit to be comparable with 0 (Int64)
+            ustrip(p_mass) > 0 && (p.mass = p_mass)
         end
 
         # add particles to galaxy
@@ -135,7 +134,7 @@ function read_galaxy_prop(g::AbstractGalaxy, prop::AbstractString, units::Symbol
 
     # get header of snapshot for conversion information
     h = read_header(GadgetIO.select_file(subbase, 0))
-    return convert_units_subfind_prop(val, prop, h, units)
+    return convert_units_subfind_prop(val, prop, h, units; verbose)
 end
 
 """
@@ -170,4 +169,17 @@ function read_galaxy_vel(g::GalaxyGroup, units::Symbol=:full; verbose::Bool=fals
 
     h = read_header(GadgetIO.select_file(subbase, 0))
     return convert_units_subfind_prop(val, "SVEL", h, units)
+end
+
+"""
+    is_main_halo(g::Galaxy)
+
+Returns if the subhalo is the first subhalo in its respective group.
+"""
+function is_main_halo(g::Galaxy)
+    subbase = string(g.snapshot.subbase)
+    h = read_header(GadgetIO.select_file(subbase, 0))
+    grnr = read_halo_prop(subbase, g.subid, "GRNR"; verbose=false)
+    ifsub, _ = read_halo_prop_and_id(subbase, grnr, "FSUB", h.num_files; verbose=false)
+    return g.isub == ifsub
 end

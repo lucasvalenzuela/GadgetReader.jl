@@ -30,7 +30,8 @@ function convert_units_subfind_prop(
     val::Union{Real,AbstractArray{<:Real}},
     prop::AbstractString,
     h::SnapshotHeader,
-    units::Symbol=:full,
+    units::Symbol=:full;
+    verbose::Bool=false,
 )
     # TODO: SPIN (units?), DSUB (vel. dispersion units?), SMST (subhalo mass table units?),
     # SLUM, SLAT, SLOB, DUST, SZ (units?), SSFR (units really M⊙/yr?)

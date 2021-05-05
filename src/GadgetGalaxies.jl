@@ -21,10 +21,11 @@ export Snapshot,
        # read halo
        read_halo!,
        read_redshift,
-       read_dm_particle_mass,
+       read_header_particle_mass,
        read_galaxy_prop,
        read_galaxy_pos,
        read_galaxy_vel,
+       is_main_halo,
 
        # units
        convert_units!,
