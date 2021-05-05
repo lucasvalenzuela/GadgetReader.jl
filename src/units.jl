@@ -26,6 +26,57 @@ function convert_units!(p::Particles, h::SnapshotHeader, units::Symbol=:full)
     return p
 end
 
+function convert_units_subfind_prop(
+    val::Union{Real,AbstractArray{<:Real}},
+    prop::AbstractString,
+    h::SnapshotHeader,
+    units::Symbol=:full,
+)
+    # TODO: SPIN (units?), DSUB (vel. dispersion units?), SMST (subhalo mass table units?),
+    # SLUM, SLAT, SLOB, DUST, SZ (units?), SSFR (units really M⊙/yr?)
+    if prop[1] === 'R' || prop in ["GPOS", "BGPO", "BGRA", "SPOS", "SCM", "SHMR"]
+        return convert_units_pos(val, h, units)
+    elseif prop[1] === 'V' || prop in ["SVEL"]
+        return convert_units_vel(val, h, units)
+    elseif (prop[1] === 'M' && prop != "MBID") || prop in ["BGMA"]
+        return convert_units_mass(val, h, units)
+    elseif prop in ["SAGE"]
+        return convert_units_age(val, h, units)
+        # elseif prop in ["TGAS"] # TODO: unclear what KeV unit is
+        # return convert_units_temp(val, h, units)
+        # elseif prop in ["LGAS"] # TODO: energy unit conversion (10^44 erg/s)
+        # return convert_units_temp(val, h, units)
+    elseif prop in ["SSFR"] && units === :full
+        return val * u"Msun" / Unitful.yr
+    else
+        verbose && @warn "The quantity $prop is returned in simulation units"
+        return val
+    end
+end
+
+
+# define generated functions for static linting
+function convert_units_full end
+function convert_units_physical end
+function convert_units_physical! end
+
+function convert_units_pos end
+function convert_units_full_pos end
+function convert_units_physical_pos end
+function convert_units_physical_pos! end
+function convert_units_vel end
+function convert_units_full_vel end
+function convert_units_physical_vel end
+function convert_units_physical_vel! end
+function convert_units_temp end
+function convert_units_full_temp end
+function convert_units_physical_temp end
+function convert_units_physical_temp! end
+function convert_units_mass end
+function convert_units_full_mass end
+function convert_units_physical_mass end
+function convert_units_physical_mass! end
+
 for (type, excl) in [("physical", ""), ("physical", "!"), ("full", "")]
     quote
         function $(Symbol("convert_units_", type, excl))(
@@ -92,27 +143,43 @@ for (key, factor, unit, plural, eq) in [
         ) where {T<:Real}
             vals .* (convert(T, $factor) * $unit)
         end
+        function $(Symbol("convert_units_", key))(
+            val::Union{Real,AbstractArray{<:Real}},
+            h::SnapshotHeader,
+            units::Symbol=:full,
+        )
+            if units === :physical
+                $(Symbol("convert_units_physical_", key))(val, h)
+            elseif units === :full
+                $(Symbol("convert_units_full_", key))(val, h)
+            else
+                val
+            end
+        end
     end |> eval
 
     quote
-       @doc """
-            convert_units_physical_$($key)(val::Real, h::SnapshotHeader)
-            convert_units_physical_$($key)(vals::AbstractArray{<:Real}, h::SnapshotHeader)
-            convert_units_physical_$($key)!(vals::AbstractArray{<:Real}, h::SnapshotHeader)
-            convert_units_full_$($key)(val::Real, h::SnapshotHeader)
-            convert_units_full_$($key)(vals::AbstractArray{<:Real}, h::SnapshotHeader)
+        @doc """
+             convert_units_$($key)(val::Union{Real,AbstractArray{<:Real}}, h::SnapshotHeader, units::Symbol=:full)
+             convert_units_physical_$($key)(val::Real, h::SnapshotHeader)
+             convert_units_physical_$($key)(vals::AbstractArray{<:Real}, h::SnapshotHeader)
+             convert_units_physical_$($key)!(vals::AbstractArray{<:Real}, h::SnapshotHeader)
+             convert_units_full_$($key)(val::Real, h::SnapshotHeader)
+             convert_units_full_$($key)(vals::AbstractArray{<:Real}, h::SnapshotHeader)
 
-        Converts $($plural) via ``$($eq)`` according to the cosmology defined by the snapshot header.
-        Full returns values in `Unitful` quantities, whereas physical returns the physical value
-        in $(eval($unit)).
-        """
-        $(Symbol("convert_units_physical_", key))#,
+         Converts $($plural) via ``$($eq)`` according to the cosmology defined by the snapshot header.
+         `:full` returns values in `Unitful` quantities, whereas `:physical` returns the physical value
+         in $(eval($unit)). `:sim` simply returns `val`.
+         """
+        $(Symbol("convert_units_", key))#,
+        # $(Symbol("convert_units_physical_", key)),
         # $(Symbol("convert_units_physical_", key, "!")),
         # $(Symbol("convert_units_full_", key))
     end |> eval
 end
 
 @doc raw"""
+    convert_units_age(val::Union{Real,AbstractArray{<:Real}}, h::SnapshotHeader, units::Symbol=:full)
     convert_units_physical_age(val::Real, h::SnapshotHeader)
     convert_units_physical_age(vals::AbstractArray{<:Real}, h::SnapshotHeader)
     convert_units_physical_age!(vals::AbstractArray{<:Real}, h::SnapshotHeader)
@@ -123,6 +190,15 @@ Converts ages from the scale factor ``a`` via the lookback time according to the
 defined by the snapshot header.
 Full returns values in `Unitful` quantities, whereas physical returns the physical value in Gyr.
 """
+function convert_units_age(val::Union{Real,AbstractArray{<:Real}}, h::SnapshotHeader, units::Symbol=:full)
+    if units === :physical
+        convert_units_physical_age(val, h)
+    elseif units === :full
+        convert_units_full_age(val, h)
+    else
+        val
+    end
+end
 function convert_units_physical_age(val::Real, h::SnapshotHeader)
     convert_units_full_age(val, h) |> ustrip
 end

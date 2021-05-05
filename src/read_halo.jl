@@ -49,9 +49,9 @@ function read_halo!(
     # Provides properties `h0`, `z`, `time`, `omega_0`, `omega_l`, `num_files`
     h = read_header(GadgetIO.select_file(subbase, 0))
 
-    # get global halo properties
-    halo_pos = read_galaxy_pos(g; verbose)
-    halo_vel = read_galaxy_vel(g; verbose)
+    # get global halo properties in simulation units
+    halo_pos = read_galaxy_pos(g, :sim; verbose)
+    halo_vel = read_galaxy_vel(g, :sim; verbose)
 
     # handle particles for different types
     Threads.@threads for (ptype, blocks) in props
@@ -82,6 +82,14 @@ function read_halo!(
 
         convert_units!(p, h, units)
 
+        # read particle mass if available in header mass array
+        if "MASS" ∉ keys(p)
+            p_mass = read_header_particle_mass(g.snapshot, ptype, units)
+            if ustrip(p_mass) > 0
+                p.mass = p_mass
+            end
+        end
+
         # add particles to galaxy
         g[ptype] = p
     end
@@ -93,26 +101,73 @@ end
 """
     read_redshift(snapshot::Snapshot)
 
-Returns the redshift `z` from the first snapfile's header.
+Returns the redshift `z` from the first subfile's header.
 """
 function read_redshift(snapshot::Snapshot)
     h = read_subfind_header(GadgetIO.select_file(snapshot.subbase |> string, 0))
     return h.z
 end
 
+"""
+    read_dm_particle_mass(snapshot::Snapshot, units::Symbol=:full; verbose::Bool=false)
 
-function read_galaxy_pos(g::Galaxy; verbose::Bool=false)
-    read_halo_prop(string(g.snapshot.subbase), g.subid, "SPOS"; verbose)
+Returns the particle mass from the first snapfile's header for a particle type (`:dm`, `:gas`, etc.).
+"""
+function read_header_particle_mass(snapshot::Snapshot, ptype::Symbol, units::Symbol=:full; verbose::Bool=false)
+    h = read_header(GadgetIO.select_file(snapshot.snapbase |> string, 0))
+    dm_mass = h.massarr[particle_type_id(ptype) + 1]
+    return convert_units_mass(dm_mass, h, units)
 end
-function read_galaxy_pos(g::GalaxyGroup; verbose::Bool=false)
-    read_halo_prop(string(g.snapshot.subbase), g.groupid, "GPOS"; verbose)
+
+"""
+    read_galaxy_prop(g::AbstractGalaxy, prop::AbstractString, units::Symbol=:full; verbose::Bool=false)
+
+Reads galaxy property from subfind for `g`. Use `:full` for `units` as `Unitful` quantities,
+`:physical` for values converted, and `:sim` for values in simulation units.
+"""
+function read_galaxy_prop(g::AbstractGalaxy, prop::AbstractString, units::Symbol=:full; verbose::Bool=false)
+    subbase = string(g.snapshot.subbase)
+
+    val = read_halo_prop(subbase, getid(g), prop; verbose)
+
+    # if units are not supposed to be converted
+    units === :sim && return val
+
+    # get header of snapshot for conversion information
+    h = read_header(GadgetIO.select_file(subbase, 0))
+    return convert_units_subfind_prop(val, prop, h, units)
 end
-function read_galaxy_vel(g::Galaxy; verbose::Bool=false)
-    read_halo_prop(string(g.snapshot.subbase), g.subid, "SVEL"; verbose)
+
+"""
+    read_galaxy_pos(g::AbstractGalaxy, units::Symbol=:full; verbose::Bool=false)
+
+Returns the galaxy's position from subfind using GPOS for a group and SPOS for a subhalo.
+"""
+function read_galaxy_pos(g::Galaxy, units::Symbol=:full; verbose::Bool=false)
+    read_galaxy_prop(g, "SPOS", units; verbose)
 end
-function read_galaxy_vel(g::GalaxyGroup; verbose::Bool=false)
+function read_galaxy_pos(g::GalaxyGroup, units::Symbol=:full; verbose::Bool=false)
+    read_galaxy_prop(g, "GPOS", units; verbose)
+end
+
+
+"""
+    read_galaxy_vel(g::Galaxy, units::Symbol=:full; verbose::Bool=false)
+
+Returns the galaxy's velocity from subfind using SVEL of FSUB for a group and SVEL for a subhalo.
+"""
+function read_galaxy_vel(g::Galaxy, units::Symbol=:full; verbose::Bool=false)
+    read_galaxy_prop(g, "SVEL", units; verbose)
+end
+function read_galaxy_vel(g::GalaxyGroup, units::Symbol=:full; verbose::Bool=false)
     subbase = string(g.snapshot.subbase)
     ifsub = read_halo_prop(subbase, g.groupid, "FSUB"; verbose)
     nfiles = read_header(GadgetIO.select_file(subbase, 0)).num_files
-    read_halo_prop_and_id(string(g.snapshot.subbase), ifsub, "SVEL", nfiles; verbose)[1]
+    val, _ = read_halo_prop_and_id(string(g.snapshot.subbase), ifsub, "SVEL", nfiles; verbose)
+
+    # if units are not supposed to be converted
+    units === :sim && return val
+
+    h = read_header(GadgetIO.select_file(subbase, 0))
+    return convert_units_subfind_prop(val, "SVEL", h, units)
 end

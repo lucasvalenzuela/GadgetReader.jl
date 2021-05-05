@@ -130,6 +130,8 @@ GG = GadgetGalaxies
 
         a = 0.277777
         b = a * u"kpc"
+        @test convert_units_pos(v, h, :sim) == v
+        @test convert_units_pos(v, h, :physical) ≈ a rtol=1e-5
         @test convert_units_physical_pos(v, h) ≈ a rtol=1e-5
         @test convert_units_physical_pos(v, h) |> typeof === Float64
         @test convert_units_physical_pos(w, h) ≈ a rtol=1e-5
@@ -138,6 +140,7 @@ GG = GadgetGalaxies
         @test convert_units_physical_pos(vs, h) |> eltype === Float64
         @test convert_units_physical_pos(ws, h)[1] .≈ a rtol=1e-5
         @test convert_units_physical_pos(ws, h) |> eltype === Float32
+        @test convert_units_pos(v, h, :full) ≈ b rtol=1e-5
         @test convert_units_full_pos(v, h) ≈ b rtol=1e-5
         @test convert_units_full_pos(v, h) |> typeof <: Quantity{Float64}
         @test convert_units_full_pos(w, h) ≈ b rtol=1e-5
@@ -166,6 +169,8 @@ GG = GadgetGalaxies
 
         a = 1.06078
         b = a * Unitful.Gyr
+        @test convert_units_age(v, h, :sim) == v
+        @test convert_units_age(v, h, :physical) ≈ a rtol=1e-5
         @test convert_units_physical_age(v, h) ≈ a rtol=1e-5
         @test convert_units_physical_age(v, h) |> typeof === Float64
         @test convert_units_physical_age(w, h) ≈ a rtol=1e-5
@@ -174,6 +179,7 @@ GG = GadgetGalaxies
         @test convert_units_physical_age(vs, h) |> eltype === Float64
         @test convert_units_physical_age(ws, h)[1] ≈ a rtol=1e-5
         @test convert_units_physical_age(ws, h) |> eltype === Float64
+        @test convert_units_age(v, h, :full) ≈ b rtol=1e-5
         @test convert_units_full_age(v, h) ≈ b rtol=1e-5
         @test convert_units_full_age(v, h) |> typeof <: Quantity{Float64}
         @test convert_units_full_age(w, h) ≈ b rtol=1e-5
