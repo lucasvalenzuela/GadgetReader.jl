@@ -106,9 +106,9 @@ for (key, factor, unit, plural, eq) in [
         Full returns values in `Unitful` quantities, whereas physical returns the physical value
         in $(eval($unit)).
         """
-        $(Symbol("convert_units_physical_", key)),
-        $(Symbol("convert_units_physical_", key, "!")),
-        $(Symbol("convert_units_full_", key))
+        $(Symbol("convert_units_physical_", key))#,
+        # $(Symbol("convert_units_physical_", key, "!")),
+        # $(Symbol("convert_units_full_", key))
     end |> eval
 end
 
