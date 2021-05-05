@@ -95,17 +95,20 @@ for (key, factor, unit, plural, eq) in [
     end |> eval
 
     quote
-        @doc """
-            convert_units_physical_$key(val::Real, h::SnapshotHeader)
-            convert_units_physical_$key(vals::AbstractArray{<:Real}, h::SnapshotHeader)
-            convert_units_physical_$(key)!(vals::AbstractArray{<:Real}, h::SnapshotHeader)
-            convert_units_full_$key(val::Real, h::SnapshotHeader)
-            convert_units_full_$key(vals::AbstractArray{<:Real}, h::SnapshotHeader)
+       @doc """
+            convert_units_physical_$($key)(val::Real, h::SnapshotHeader)
+            convert_units_physical_$($key)(vals::AbstractArray{<:Real}, h::SnapshotHeader)
+            convert_units_physical_$($key)!(vals::AbstractArray{<:Real}, h::SnapshotHeader)
+            convert_units_full_$($key)(val::Real, h::SnapshotHeader)
+            convert_units_full_$($key)(vals::AbstractArray{<:Real}, h::SnapshotHeader)
 
-        Converts $(plural) via ``$eq`` according to the cosmology defined by the snapshot header.
-        Full returns values in `Unitful` quantities, whereas physical returns the physical value in $(eval(unit)).
+        Converts $($plural) via ``$($eq)`` according to the cosmology defined by the snapshot header.
+        Full returns values in `Unitful` quantities, whereas physical returns the physical value
+        in $(eval($unit)).
         """
-        convert_units_physical, convert_units_physical!, convert_units_full
+        $(Symbol("convert_units_physical_", key)),
+        $(Symbol("convert_units_physical_", key, "!")),
+        $(Symbol("convert_units_full_", key))
     end |> eval
 end
 
