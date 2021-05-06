@@ -46,12 +46,12 @@ function read_halo!(
     snapbase = string(g.snapshot.snapbase)
     subbase = string(g.snapshot.subbase)
 
-    # Provides properties `h0`, `z`, `time`, `omega_0`, `omega_l`, `num_files`
-    h = read_header(GadgetIO.select_file(subbase, 0))
-
     # get global halo properties in simulation units
     halo_pos = read_galaxy_pos(g, :sim; verbose)
     halo_vel = read_galaxy_vel(g, :sim; verbose)
+
+    # Provides properties `h0`, `z`, `time`, `omega_0`, `omega_l`, `num_files`
+    h = read_header(snapbase)
 
     # handle particles for different types
     Threads.@threads for (ptype, blocks) in props
@@ -100,10 +100,10 @@ end
 """
     read_redshift(snapshot::Snapshot)
 
-Returns the redshift `z` from the first subfile's header.
+Returns the redshift ``z`` from the first subfile's header.
 """
 function read_redshift(snapshot::Snapshot)
-    h = read_subfind_header(GadgetIO.select_file(snapshot.subbase |> string, 0))
+    h = read_subfind_header(snapshot.subbase |> string)
     return h.z
 end
 
@@ -113,7 +113,7 @@ end
 Returns the particle mass from the first snapfile's header for a particle type (`:dm`, `:gas`, etc.).
 """
 function read_header_particle_mass(snapshot::Snapshot, ptype::Symbol, units::Symbol=:full; verbose::Bool=false)
-    h = read_header(GadgetIO.select_file(snapshot.snapbase |> string, 0))
+    h = read_header(snapshot.snapbase |> string)
     dm_mass = h.massarr[particle_type_id(ptype) + 1]
     return convert_units_mass(dm_mass, h, units)
 end
@@ -133,7 +133,7 @@ function read_galaxy_prop(g::AbstractGalaxy, prop::AbstractString, units::Symbol
     units === :sim && return val
 
     # get header of snapshot for conversion information
-    h = read_header(GadgetIO.select_file(subbase, 0))
+    h = read_subfind_header(subbase)
     return convert_units_subfind_prop(val, prop, h, units; verbose)
 end
 
@@ -161,13 +161,13 @@ end
 function read_galaxy_vel(g::GalaxyGroup, units::Symbol=:full; verbose::Bool=false)
     subbase = string(g.snapshot.subbase)
     ifsub = read_halo_prop(subbase, g.groupid, "FSUB"; verbose)
-    nfiles = read_header(GadgetIO.select_file(subbase, 0)).num_files
-    val, _ = read_halo_prop_and_id(string(g.snapshot.subbase), ifsub, "SVEL", nfiles; verbose)
+    nfiles = read_subfind_header(subbase).num_files
+    val, _ = read_halo_prop_and_id(subbase, ifsub, "SVEL", nfiles; verbose)
 
     # if units are not supposed to be converted
     units === :sim && return val
 
-    h = read_header(GadgetIO.select_file(subbase, 0))
+    h = read_subfind_header(subbase)
     return convert_units_subfind_prop(val, "SVEL", h, units)
 end
 
@@ -178,8 +178,8 @@ Returns if the subhalo is the first subhalo in its respective group.
 """
 function is_main_halo(g::Galaxy)
     subbase = string(g.snapshot.subbase)
-    h = read_header(GadgetIO.select_file(subbase, 0))
+    nfiles = read_subfind_header(subbase).num_files
     grnr = read_halo_prop(subbase, g.subid, "GRNR"; verbose=false)
-    ifsub, _ = read_halo_prop_and_id(subbase, grnr, "FSUB", h.num_files; verbose=false)
+    ifsub, _ = read_halo_prop_and_id(subbase, grnr, "FSUB", nfiles; verbose=false)
     return g.isub == ifsub
 end
