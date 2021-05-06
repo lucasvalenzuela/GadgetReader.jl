@@ -71,12 +71,12 @@ function read_halo!(
         p = Particles(ptype, prop_data)
 
         # shift across box borders and transform into halo frame of reference
-        if "POS" in blocks
+        if "POS" in blocks && length(p.pos) > 0
             p.pos .= shift_across_box_border.(p.pos, halo_pos, h.boxsize, 1 // 2 * h.boxsize) .- halo_pos
         end
 
         # transform velocities into halo frame of reference
-        if "VEL" in blocks
+        if "VEL" in blocks && length(p.vel) > 0
             p.vel .-= halo_vel
         end
 

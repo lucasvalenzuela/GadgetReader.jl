@@ -19,7 +19,7 @@ function convert_units!(p::Particles, h::SnapshotHeader, units::Symbol=:full)
     end
 
     props = keys(p)
-    if :zs in props && (:im in props || :mass in props)
+    if :zs in props && length(p.zs) > 0 && (:im in props || :mass in props)
         p.zs = convert_units_solar_metallicity(p.zs, :im in props ? p.iM : p.mass)
     end
 
