@@ -20,14 +20,14 @@ Reads particles of a [`Galaxy`](@ref).
 # Keywords
 - `radius::Union{Real,Nothing}=nothing`: if `nothing`, the half-mass radius "RHMS"
 - `rad_scale::Real=1`: read particles within `rad_scale * radius` of halo position
-- `units::Symbol=:full`: `:full` for units as `Unitful` quantities, `:physical` for values converted
+- `units::Symbol=:full`: use `:full` for units as `Unitful` quantities, `:physical` for values converted
   to physical units (kpc, km/s, solar metallicities etc.), `:sim` for values in simulation units
 - `use_keys::Bool=true`: if Peano-Hilbert keys should be used if possible
 - `verbose::Bool=false`: verbose output
 - `props::Tuple=(
        (:gas, ["POS", "VEL", "MASS", "TEMP", "SFR", "Zs"]),
        (:dm, ["POS", "VEL"]),
-       (:stars, ["POS", "VEL", "MASS", "AGE", "Zs", "iM"]),
+       (:stars, ["POS", "VEL", "MASS", "AGE", "Zs", "iM"])
    )`: particle types (see [`Particles`](@ref)) and properties to be read
 """
 function read_halo!(
