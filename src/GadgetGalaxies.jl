@@ -9,6 +9,7 @@ using UnitfulAstro
 include("snapshot.jl")
 include("galaxy.jl")
 include("read_halo.jl")
+include("transformations.jl")
 include("units.jl")
 
 # structs
@@ -26,6 +27,10 @@ export Snapshot,
        read_galaxy_pos,
        read_galaxy_vel,
        is_main_halo,
+
+       # transformations
+       rotate,
+       rotate!,
 
        # units
        convert_units!,

@@ -320,6 +320,23 @@ GG = GadgetGalaxies
               "GalaxyGroup at z=4.0\n igroup 0\ndm: 70 Particles\n ID POS\ngas: 76 Particles\n ID MASS VEL\n"
     end
 
+    @testset "Transformation" begin
+        a = [1 2 3 4; 5 6 7 8; 9 0 1 1]
+        b = [9 0 1 1; 5 6 7 8; -1 -2 -3 -4]
+        R = [0 0 1; 0 1 0; -1 0 0]
+        @test rotate(a, R) == b
+        rotate!(a, R)
+        @test a == b
+
+        p11 = 2.45564u"kpc"
+        v12 = 90.39079u"km/s"
+        @test g.dm.pos[1,1] ≈ p11 rtol = 1e-5
+        @test g.gas.vel[1,2] ≈ v12 rtol = 1e-5
+        rotate!(g, R)
+        @test g.dm.pos[3,1] ≈ -p11 rtol = 1e-5
+        @test g.gas.vel[3,2] ≈ -v12 rtol = 1e-5
+    end
+
     @info "deleting test data..."
     for i in 0:3
         rm("./sub_002.$i")
