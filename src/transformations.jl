@@ -1,4 +1,4 @@
-raw"""
+@doc raw"""
     rotate!(g::AbstractGalaxy, rotmat::AbstractMatrix{<:Real})
 
 Rotates the galaxy `g` by the ``3 \times 3`` rotation matrix `rotmat`.
