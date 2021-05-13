@@ -1,8 +1,13 @@
 __precompile__()
 module GadgetGalaxies
 
+using LinearAlgebra: rotate!
+
 using Cosmology
 using GadgetIO
+using LinearAlgebra
+using NaNMath
+using Statistics
 using Unitful
 using UnitfulAstro
 
@@ -10,7 +15,9 @@ include("snapshot.jl")
 include("galaxy.jl")
 include("read_halo.jl")
 include("transformations.jl")
+include("shapes.jl")
 include("units.jl")
+include("utils.jl")
 
 # structs
 export Snapshot,
@@ -31,6 +38,19 @@ export Snapshot,
        # transformations
        rotate,
        rotate!,
+       rotate_edgeon,
+       rotate_edgeon!,
+
+       # shapes
+       Ellipsoid,
+       Sphere,
+       rotation_matrix_edgeon,
+       rotation_matrix_2D,
+       rotation_matrix_axis_ratios,
+       r²_ellipsoid,
+       triaxiality,
+       ellipticity,
+       eccentricity,
 
        # units
        convert_units!,

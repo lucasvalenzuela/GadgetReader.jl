@@ -1,6 +1,7 @@
 using Downloads
 using GadgetGalaxies
 using GadgetIO
+using LinearAlgebra
 using Test
 using Unitful
 using UnitfulAstro
@@ -64,6 +65,10 @@ GG = GadgetGalaxies
         @test p.properties["Zs"] === p["Zs"]
         @test p.properties["iM"] === p.iM
         @test issetequal(keys(p), [:id, :mass, :zs, :im])
+        @test haskey(p, :id)
+        @test haskey(p, "ID")
+        @test !haskey(p, :pos)
+        @test !haskey(p, "POS")
         @test values(p) === values(p.properties)
         @test issetequal(propertynames(p), [:type, :id, :mass, :zs, :im])
 
@@ -74,6 +79,13 @@ GG = GadgetGalaxies
         @test_throws ErrorException p[:type] = :dm
 
         @test particle_type_id(:gas) == 0
+
+        q = copy(p)
+        @test q !== p
+        @test q.id === p.id
+        q.id = p.id .+ 1
+        @test q.id !== p.id
+        @test q.id[1] != p.id[1]
 
 
         # galaxy
@@ -90,11 +102,20 @@ GG = GadgetGalaxies
         @test g.particles[:stars] === g.stars
         @test g.particles[:dm] === g.dm
         @test issetequal(keys(g), [:stars, :dm])
+        @test haskey(g, :stars)
+        @test !haskey(g, :gas)
         @test values(g) === values(g.particles)
         @test issetequal(propertynames(g), [:snapshot, :isub, :subid, :stars, :dm])
 
         g[:bh] = dm
         @test g.bh === dm
+
+        h = copy(g)
+        @test h !== g
+        @test h.stars !== g.stars
+        @test h.stars.id === g.stars.id
+        h.stars.id = g.stars.id .+ 1
+        @test h.stars.id !== g.stars.id
 
         g = Galaxy(snapshot, 1234, false)
         @test g.snapshot === snapshot
@@ -115,6 +136,7 @@ GG = GadgetGalaxies
         snapshot = Snapshot("snap_002", "sub_002")
         g = Galaxy(snapshot, 0)
         @test g.subid == HaloID(0, 1)
+
 
         # galaxy group
         snapshot = Snapshot("box", 10)
@@ -162,7 +184,7 @@ GG = GadgetGalaxies
     snapshot = Snapshot("snap_002", "sub_002")
     g = Galaxy(snapshot, 0)
     gr = GalaxyGroup(snapshot, 0)
-    h = read_header(GadgetIO.select_file(snapshot.subbase, 0))
+    h = read_header(snapshot.subbase)
 
     @testset "Units" begin
         v, w = 1.0, 1.0f0
@@ -288,7 +310,7 @@ GG = GadgetGalaxies
         warn = "The quantity GRNR is returned in simulation units"
         @test_logs (:info, info) (:warn, warn) read_galaxy_prop(g, "GRNR"; verbose=true)
         @test GG.convert_units_subfind_prop(0.1, "SAGE", h) ≈ 1.06078Unitful.Gyr rtol = 1e-5
-        @test GG.convert_units_subfind_prop(0.1, "SSFR", h) == 0.1u"Msun"/Unitful.yr
+        @test GG.convert_units_subfind_prop(0.1, "SSFR", h) == 0.1u"Msun" / Unitful.yr
 
         @test read_galaxy_pos(g) == read_galaxy_pos(gr)
         @test read_galaxy_vel(g) == read_galaxy_vel(gr)
@@ -296,7 +318,7 @@ GG = GadgetGalaxies
     end
 
     @testset "Read Halo" begin
-        props = ((:dm, ["POS"]), (:gas, ["MASS", "VEL"]))
+        props = ((:dm, ["POS"]), (:gas, ["MASS", "POS", "VEL"]))
         read_halo!(g; use_keys=false, props, units=:full)
 
         @test typeof(g) <: Galaxy
@@ -306,7 +328,7 @@ GG = GadgetGalaxies
         io = IOBuffer()
         show(io, "text/plain", g)
         @test String(take!(io)) ==
-              "Galaxy at z=4.0\n isub 0\ndm: 7 Particles\n ID POS\ngas: 20 Particles\n ID MASS VEL\n"
+              "Galaxy at z=4.0\n isub 0\ndm: 7 Particles\n ID POS\ngas: 20 Particles\n ID MASS POS VEL\n"
 
         read_halo!(gr; use_keys=false, props, units=:full)
 
@@ -317,7 +339,7 @@ GG = GadgetGalaxies
         io = IOBuffer()
         show(io, "text/plain", gr)
         @test String(take!(io)) ==
-              "GalaxyGroup at z=4.0\n igroup 0\ndm: 70 Particles\n ID POS\ngas: 76 Particles\n ID MASS VEL\n"
+              "GalaxyGroup at z=4.0\n igroup 0\ndm: 70 Particles\n ID POS\ngas: 76 Particles\n ID MASS POS VEL\n"
     end
 
     @testset "Transformation" begin
@@ -330,11 +352,227 @@ GG = GadgetGalaxies
 
         p11 = 2.45564u"kpc"
         v12 = 90.39079u"km/s"
-        @test g.dm.pos[1,1] ≈ p11 rtol = 1e-5
-        @test g.gas.vel[1,2] ≈ v12 rtol = 1e-5
+        @test g.dm.pos[1, 1] ≈ p11 rtol = 1e-5
+        @test g.gas.vel[1, 2] ≈ v12 rtol = 1e-5
+        gc = rotate(g, R)
+        dmc = rotate(g.dm, R)
+        @test gc.dm.pos[3, 1] ≈ -p11 rtol = 1e-5
+        @test dmc.pos[3, 1] ≈ -p11 rtol = 1e-5
+        @test gc.gas.vel[3, 2] ≈ -v12 rtol = 1e-5
+        @test g.dm.pos != gc.dm.pos
+        @test g.gas.vel != gc.gas.vel
         rotate!(g, R)
-        @test g.dm.pos[3,1] ≈ -p11 rtol = 1e-5
-        @test g.gas.vel[3,2] ≈ -v12 rtol = 1e-5
+        @test g.dm.pos[3, 1] ≈ -p11 rtol = 1e-5
+        @test g.gas.vel[3, 2] ≈ -v12 rtol = 1e-5
+        rotate!(dmc, R)
+        @test dmc.pos[3, 1] ≈ 3.05406u"kpc" rtol = 1e-5
+
+        @test rotate_edgeon(gr.gas; algorithm=:unw_i_vol).pos != gr.gas.pos
+        @test rotate_edgeon(gr, :gas; radius=20u"kpc").dm.pos != gr.dm.pos
+
+        gr2 = deepcopy(gr)
+        rotate_edgeon!(gr2.gas).pos
+        @test gr2 != gr.gas.pos
+        gr2 = deepcopy(gr)
+        rotate_edgeon!(gr2, :gas).dm.pos
+        @test gr2.dm.pos != gr.dm.pos
+
+        @test rotate_edgeon(gr.gas; axis_ratios=true) isa Tuple
+        @test rotate_edgeon!(gr2.gas; axis_ratios=true) isa Tuple
+        @test rotate_edgeon(gr, :gas; axis_ratios=true) isa Tuple
+        @test rotate_edgeon!(gr2, :gas; axis_ratios=true) isa Tuple
+    end
+
+    @testset "Shapes" begin
+        let err = nothing
+            try
+                GG.get_algorithm_variables(:abc)
+            catch err
+            end
+            @test err isa ErrorException
+        end
+
+        # 2d to 3d rotation matrix
+        θ = π / 3
+        R2d = [cos(θ) -sin(θ); sin(θ) cos(θ)]
+        R3dx = GG.rotation_matrix_to_3d(R2d, [2, 3])
+        R3dy = GG.rotation_matrix_to_3d(R2d, [3, 1])
+        R3dz = GG.rotation_matrix_to_3d(R2d, [1, 2])
+        @test R3dx == [1 0 0; 0 cos(θ) -sin(θ); 0 sin(θ) cos(θ)]
+        @test R3dy == [cos(θ) 0 sin(θ); 0 1 0; -sin(θ) 0 cos(θ)]
+        @test R3dz == [cos(θ) -sin(θ) 0; sin(θ) cos(θ) 0; 0 0 1]
+
+        # parameters
+        @test eccentricity(0.3) ≈ sqrt(1 - 0.3^2)
+        @test ellipticity(0.3) ≈ 1 - 0.3
+        @test triaxiality(0.7, 0.6) ≈ (1 - 0.7^2) / (1 - 0.6^2)
+
+        # rotation matrix
+        𝐈 = [2 -1 0; -1 2 -1; 0 -1 2]
+        Q⁻¹, q, s = rotation_matrix_axis_ratios(𝐈)
+        @test Q⁻¹[1, 1] ≈ Q⁻¹[1, 3] ≈ Q⁻¹[3, 1] ≈ Q⁻¹[3, 3] ≈ 0.5
+        @test -Q⁻¹[1, 2] ≈ Q⁻¹[2, 1] ≈ -Q⁻¹[2, 3] ≈ Q⁻¹[3, 2] ≈ √0.5
+        @test Q⁻¹[2, 2] ≈ 0 atol = 1e-14
+        @test q ≈ 0.765366 rtol = 1e-5
+        @test s ≈ 0.414213 rtol = 1e-5
+
+        Q⁻¹, q, s, axes = rotation_matrix_axis_ratios(𝐈; return_axes=true)
+        @test axes[1][1] ≈ axes[1][3] ≈ axes[3][1] ≈ axes[3][3] ≈ 0.5
+        @test axes[2][1] ≈ -axes[2][3] ≈ -axes[1][2] ≈ axes[3][2] ≈ √0.5
+        @test axes[2][2] ≈ 0 atol = 1e-14
+
+        # inertia matrix: upper triangle
+        𝐈 = zeros(Float32, 3, 3)
+        𝐈_unw = [3103.08 -240.712 24.434; 0.0 19302.6 3955.77; 0.0 0.0 5671.47]
+        𝐈_red = [16.1944 -2.31039 0.309565; 0.0 39.9156 3.32378; 0.0 0.0 19.89]
+        GG.fill_𝐈_up!(𝐈, gr.gas.pos, gr.gas.mass, false, :unweighted)
+        @test isapprox.(𝐈, 𝐈_unw) |> all
+        GG.fill_𝐈_up!(𝐈, gr.gas.pos, gr.gas.mass, false, :reduced)
+        @test isapprox.(𝐈, 𝐈_red) |> all
+        GG.fill_𝐈_up!(𝐈, gr.gas.pos, gr.gas.mass, true, :unweighted)
+        @test isapprox.(𝐈 ./ ustrip(gr.gas.mass[1]), 𝐈_unw) |> all # only works because of same gas mass of all
+        GG.fill_𝐈_up!(𝐈, gr.gas.pos, gr.gas.mass, true, :reduced)
+        @test isapprox.(𝐈 ./ ustrip(gr.gas.mass[1]), 𝐈_red) |> all # only works because of same gas mass of all
+
+        # ellipsoidal distances
+        @test r²_ellipsoid(gr.gas.pos, 0.7, 0.5)[1] ≈ 573.1933u"kpc^2" rtol = 1e-5
+        @test r²_ellipsoid(gr.gas.pos, 0.7, nothing)[1] ≈ 514.1716u"kpc^2" rtol = 1e-5
+
+        # ellipsoidal masking
+        sph = Sphere(20u"kpc")
+        @test GG.ellipsoidal_mask(gr.gas.pos, sph) |> count == 47
+        ell = Ellipsoid(20u"kpc", 0.7, 0.5, :volume)
+        @test GG.ellipsoidal_mask(gr.gas.pos, ell) |> count == 45
+        @test GG.ellipsoidal_mask(gr.gas.pos, ell; return_r²_ellipsoid=true)[2][1] ≈ 573.1933u"kpc^2" rtol =
+            1e-5
+        ell = Ellipsoid(20u"kpc", 0.7, 0.5, :axis)
+        @test GG.ellipsoidal_mask(gr.gas.pos, ell) |> count == 35
+
+        # inertia matrices
+        𝐈_unw = Symmetric(𝐈_unw, :U)
+        𝐈_red = Symmetric(𝐈_red, :U)
+        @test isapprox.(GG.inertia_matrix(gr.gas.pos, nothing; mass_weighted=false), 𝐈_unw) |> all
+        @test isapprox.(GG.inertia_matrix(gr.gas.pos, gr.gas.mass) ./ ustrip(gr.gas.mass[1]), 𝐈_unw) |> all
+        @test isapprox.(
+            GG.inertia_matrix(gr.gas.pos, nothing; mass_weighted=false, inertia_matrix_type=:reduced),
+            𝐈_red,
+        ) |> all
+        @test isapprox.(
+            GG.inertia_matrix(gr.gas.pos, gr.gas.mass; inertia_matrix_type=:reduced) ./
+            ustrip(gr.gas.mass[1]),
+            𝐈_red,
+        ) |> all
+
+        @test isapprox.(
+            GG.inertia_matrix_iterative(gr.gas.pos, nothing, :unweighted; mass_weighted=false),
+            𝐈_unw,
+        ) |> all
+        @test isapprox.(
+            GG.inertia_matrix_iterative(gr.gas.pos, gr.gas.mass, :unweighted) ./ ustrip(gr.gas.mass[1]),
+            𝐈_unw,
+        ) |> all
+        @test isapprox.(
+            GG.inertia_matrix_iterative(gr.gas.pos, nothing, :reduced; mass_weighted=false),
+            𝐈_red,
+        ) |> all
+        @test isapprox.(
+            GG.inertia_matrix_iterative(gr.gas.pos, gr.gas.mass, :reduced) ./ ustrip(gr.gas.mass[1]),
+            𝐈_red,
+        ) |> all
+
+        # iterative inertia matrices
+        radius = 20u"kpc"
+        𝐈_unwi = [1749.14 -1014.96 453.757; -1014.96 2522.14 -459.417; 453.757 -459.417 1034.89]
+        𝐈_redi = [13.8342 -2.85969 1.23256; -2.85969 18.0241 -1.74392; 1.23256 -1.74392 14.1417]
+        𝐈_redelli = [7.99452 -4.20033 1.454; -4.20033 12.72 -1.5627; 1.454 -1.5627 6.82152]
+        𝐈_unwi_ax = [285.81 -420.516 164.467; -420.516 667.925 -272.656; 164.467 -272.656 145.668]
+        𝐈_redi_ax = [13.1609 -2.25873 1.22684; -2.25873 16.9281 -2.09812; 1.22684 -2.09812 13.911]
+        @test isapprox.(
+            GG.inertia_matrix_iterative(gr.gas.pos, nothing, :unweighted; radius, mass_weighted=false),
+            𝐈_unwi,
+        ) |> all
+        @test isapprox.(
+            GG.inertia_matrix_iterative(gr.gas.pos, gr.gas.mass, :unweighted; radius) ./
+            ustrip(gr.gas.mass[1]),
+            𝐈_unwi,
+        ) |> all
+        @test isapprox.(
+            GG.inertia_matrix_iterative(gr.gas.pos, nothing, :reduced; radius, mass_weighted=false),
+            𝐈_redi,
+        ) |> all
+        @test isapprox.(
+            GG.inertia_matrix_iterative(
+                gr.gas.pos,
+                nothing,
+                :reduced;
+                radius,
+                mass_weighted=false,
+                ellipsoidal_distance=true,
+            ),
+            𝐈_redelli,
+        ) |> all
+        @test isapprox.(
+            GG.inertia_matrix_iterative(
+                gr.gas.pos,
+                nothing,
+                :unweighted;
+                radius,
+                mass_weighted=false,
+                constant_volume=false,
+            ),
+            𝐈_unwi_ax,
+        ) |> all
+        @test isapprox.(
+            GG.inertia_matrix_iterative(
+                gr.gas.pos,
+                nothing,
+                :reduced;
+                radius,
+                mass_weighted=false,
+                constant_volume=false,
+            ),
+            𝐈_redi_ax,
+        ) |> all
+
+        # full rotation matrix
+        R_unw = [
+            0.013092664 -0.96556526 -0.25983113
+            0.05690142 -0.25871283 0.96427697
+            0.99829394 0.027409703 -0.05155479
+        ]
+        R_unw_r = [
+            0.5127014 -0.8163861 0.2658031
+            0.7872874 0.57054496 0.23378807
+            0.34251392 -0.08939998 -0.9352497
+        ]
+        R_unw_r_i = [
+            0.5581614 -0.78767705 0.2608086
+            0.67917794 0.61428696 0.40170747
+            0.4766269 0.047082156 -0.8778439
+        ]
+        R, q, s = rotation_matrix_edgeon(gr.gas; algorithm=:unw)
+        @test isapprox.(R, R_unw; rtol=1e-5) |> all
+        R, q, s = rotation_matrix_edgeon(gr.gas; algorithm=:unw, radius)
+        @test isapprox.(R, R_unw_r; rtol=1e-5) |> all
+        R, q, s = rotation_matrix_edgeon(gr.gas; algorithm=:unw_i_vol, radius)
+        @test isapprox.(R, R_unw_r_i; rtol=1e-5) |> all
+
+        # 2D rotation matrix
+        R_unw = [0.009512025 0.0 0.9999547; 0.0 1.0 0.0; 0.9999547 0.0 -0.009512025]
+        R_unw_r = [0.009512025 0.0 0.9999547; 0.0 1.0 0.0; 0.9999547 0.0 -0.009512025]
+        R_unw_r_i = [1.0 0.0 0.0; 0.0 0.9836683 -0.17999081; 0.0 0.17999081 0.98366827]
+        R, q = rotation_matrix_2D(gr.gas; algorithm=:unw, perspective=:edgeon)
+        R, q = rotation_matrix_2D(gr.gas; algorithm=:unw, radius, perspective=:sideon)
+        R, q = rotation_matrix_2D(gr.gas; algorithm=:unw_i_vol, radius, perspective=:faceon)
+        @test rotation_matrix_2D(gr.gas; algorithm=:unw, matrix_2d=true)[1] |> size == (2, 2)
+
+        let err = nothing
+            try
+                GG.rotation_matrix_2D(gr.gas; algorithm=:unw, matrix_2d=false, perspective=:abc)
+            catch err
+            end
+            @test err isa ErrorException
+        end
     end
 
     @info "deleting test data..."

@@ -55,8 +55,11 @@ Base.getindex(obj::Particles, str::String) = obj.properties[str]
 Base.getindex(obj::Particles, sym::Symbol) = Base.getproperty(obj, sym)
 Base.setindex!(obj::Particles, val, sym::Symbol) = Base.setproperty!(obj, sym, val)
 Base.keys(obj::Particles) = keys(obj.properties) .|> lowercase .|> Symbol
+Base.haskey(obj::Particles, key) = haskey(obj.properties, key)
+Base.haskey(obj::Particles, key::Symbol) = key in keys(obj)
 Base.values(obj::Particles) = values(obj.properties)
 Base.propertynames(obj::Particles) = [:type; keys(obj)]
+Base.copy(obj::Particles) = Particles(obj.type, copy(obj.properties))
 
 function Base.show(io::IO, ::MIME"text/plain", obj::Particles)
     printstyled(io, String(obj.type); bold=true)
@@ -233,9 +236,15 @@ end
 Base.getindex(obj::AbstractGalaxy, sym::Symbol) = Base.getproperty(obj, sym)
 Base.setindex!(obj::AbstractGalaxy, val, sym::Symbol) = Base.setproperty!(obj, sym, val)
 Base.keys(obj::AbstractGalaxy) = keys(obj.particles) |> collect
+Base.haskey(obj::AbstractGalaxy, key) = haskey(obj.particles, key)
 Base.values(obj::AbstractGalaxy) = values(obj.particles)
 Base.propertynames(obj::Galaxy) = [[:snapshot, :isub, :subid]; keys(obj)]
 Base.propertynames(obj::GalaxyGroup) = [[:snapshot, :igroup, :groupid]; keys(obj)]
+
+function Base.copy(obj::T) where {T<:AbstractGalaxy}
+    particles = Dict(key => copy(p) for (key, p) in pairs(obj.particles))
+    T(obj.snapshot, getind(obj), getid(obj), particles)
+end
 
 function Base.show(io::IO, ::MIME"text/plain", obj::AbstractGalaxy)
     printstyled(io, typeof(obj); bold=true)

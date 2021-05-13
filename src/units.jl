@@ -34,13 +34,13 @@ function convert_units_subfind_prop(
     units::Symbol=:full;
     verbose::Bool=false,
 )
-    # TODO: SPIN (units?), DSUB (vel. dispersion units?), SMST (subhalo mass table units?),
+    # TODO: SPIN (units: angular momentum), DSUB (vel. dispersion units?),
     # SLUM, SLAT, SLOB, DUST, SZ (units?), SSFR (units really M⊙/yr?)
     if prop[1] === 'R' || prop in ["GPOS", "BGPO", "BGRA", "SPOS", "SCM", "SHMR"]
         return convert_units_pos(val, h, units)
     elseif prop[1] === 'V' || prop in ["SVEL"]
         return convert_units_vel(val, h, units)
-    elseif (prop[1] === 'M' && prop != "MBID") || prop in ["BGMA"]
+    elseif (prop[1] === 'M' && prop != "MBID") || prop in ["BGMA", "SMST"]
         return convert_units_mass(val, h, units)
     elseif prop in ["SAGE"]
         return convert_units_age(val, h, units)
