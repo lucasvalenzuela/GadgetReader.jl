@@ -6,7 +6,6 @@ using LinearAlgebra: rotate!
 using Cosmology
 using GadgetIO
 using LinearAlgebra
-using NaNMath
 using Statistics
 using Unitful
 using UnitfulAstro
