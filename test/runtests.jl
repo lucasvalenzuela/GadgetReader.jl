@@ -559,12 +559,22 @@ GG = GadgetGalaxies
 
         # 2D rotation matrix
         R_unw = [0.009512025 0.0 0.9999547; 0.0 1.0 0.0; 0.9999547 0.0 -0.009512025]
-        R_unw_r = [0.009512025 0.0 0.9999547; 0.0 1.0 0.0; 0.9999547 0.0 -0.009512025]
-        R_unw_r_i = [1.0 0.0 0.0; 0.0 0.9836683 -0.17999081; 0.0 0.17999081 0.98366827]
+        R_unw_r = [1.0 0.0 0.0; 0.0 0.9836683 -0.17999081; 0.0 0.17999081 0.98366827]
+        R_unw_r_i = [0.43801472 -0.89896786 0.0; 0.898968 0.43801472 0.0; 0.0 0.0 1.0]
         R, q = rotation_matrix_2D(gr.gas; algorithm=:unw, perspective=:edgeon)
+        @test isapprox.(R, R_unw; rtol=1e-5) |> all
         R, q = rotation_matrix_2D(gr.gas; algorithm=:unw, radius, perspective=:sideon)
+        @test isapprox.(R, R_unw_r; rtol=1e-5) |> all
         R, q = rotation_matrix_2D(gr.gas; algorithm=:unw_i_vol, radius, perspective=:faceon)
+        @test isapprox.(R, R_unw_r_i; rtol=1e-5) |> all
         @test rotation_matrix_2D(gr.gas; algorithm=:unw, matrix_2d=true)[1] |> size == (2, 2)
+
+        @test_nowarn rotation_matrix_edgeon(gr.gas; algorithm=:red, radius)
+        @test_nowarn rotation_matrix_edgeon(gr.gas; algorithm=:unw_i_ax, radius)
+        @test_nowarn rotation_matrix_edgeon(gr.gas; algorithm=:red_i_vol, radius)
+        @test_nowarn rotation_matrix_edgeon(gr.gas; algorithm=:red_i_ax, radius)
+        @test_nowarn rotation_matrix_edgeon(gr.gas; algorithm=:red_ell_i_vol, radius)
+        @test_nowarn rotation_matrix_edgeon(gr.gas; algorithm=:red_ell_i_ax, radius)
 
         let err = nothing
             try
