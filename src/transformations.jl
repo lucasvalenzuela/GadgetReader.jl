@@ -152,31 +152,31 @@ end
 
 
 @doc raw"""
-    translate(p::Particles, x⃗::AbstractVector{<:Number})
-    translate!(p::Particles, x⃗::AbstractVector{<:Number})
+    translate(p::Particles, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
+    translate!(p::Particles, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
 
 Translates the particles `p` by the vector `x⃗`.
 
 The non-in-place version `translate` creates a copy of the particles with only new pointers to the
-positions ("POS").
+property.
 """
-function translate(p::Particles, x⃗::AbstractVector{<:Number})
+function translate(p::Particles, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
     @assert length(x⃗) == 3
 
     pc = copy(p)
 
-    if haskey(p, :pos)
-        pc.pos = pc.pos .+ x⃗
+    if haskey(p, prop)
+        pc[prop] = pc[prop] .+ x⃗
     end
 
     return pc
 end
 
-function translate!(p::Particles, x⃗::AbstractVector{<:Number})
+function translate!(p::Particles, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
     @assert length(x⃗) == 3
 
-    if haskey(p, :pos)
-        p.pos .+= x⃗
+    if haskey(p, prop)
+        p[prop] .+= x⃗
     end
 
     return p
@@ -185,35 +185,35 @@ end
 
 
 @doc raw"""
-    translate(g::AbstractGalaxy, x⃗::AbstractVector{<:Number})
-    translate!(g::AbstractGalaxy, x⃗::AbstractVector{<:Number})
+    translate(g::AbstractGalaxy, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
+    translate!(g::AbstractGalaxy, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
 
 Translates the galaxy `g` by the vector `x⃗`.
 
 The non-in-place version `translate` creates a copy of the galaxy with only new pointers to the
-positions ("POS") and copies of the particle Dicts.
+property and copies of the particle Dicts.
 """
-function translate(g::AbstractGalaxy, x⃗::AbstractVector{<:Number})
+function translate(g::AbstractGalaxy, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
     @assert length(x⃗) == 3
 
     gc = copy(g)
 
     # do for stars, dm, etc.
     for p in values(gc)
-        if haskey(p, :pos)
-            p.pos = p.pos .+ x⃗
+        if haskey(p, prop)
+            p[prop] = p[prop] .+ x⃗
         end
     end
 
     return gc
 end
 
-function translate!(g::AbstractGalaxy, x⃗::AbstractVector{<:Number})
+function translate!(g::AbstractGalaxy, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
     @assert length(x⃗) == 3
 
     # do for stars, dm, etc.
     for p in values(g)
-        translate!(p, x⃗)
+        translate!(p, x⃗, prop)
     end
 
     return g
