@@ -366,9 +366,25 @@ end
 
 
 """
+    r²_circle(pos::AbstractMatrix{<:Number})
+
+Squared distances in 2D from origin.
+"""
+r²_circle(pos::AbstractMatrix{<:Number}) = @views @. pos[1, :]^2 + pos[2, :]^2
+
+
+"""
+    r²_sphere(pos::AbstractMatrix{<:Number})
+
+Squared distances in 3D from origin.
+"""
+r²_sphere(pos::AbstractMatrix{<:Number}) = @views @. pos[1, :]^2 + pos[2, :]^2 + pos[3, :]^2
+
+
+"""
     r²_ellipsoid(pos::AbstractMatrix{<:Number}, q::Real, s::Nothing)
 
-Ellipsoidal distances in 2D from origin with axis ratio `q`.
+Squared ellipsoidal distances in 2D from origin with axis ratio `q`.
 
 For 3D version, see Eq. 6 in Allgood et al. 2006, https://arxiv.org/abs/astro-ph/0508497
 """
@@ -380,7 +396,7 @@ end
 """
     r²_ellipsoid(pos::AbstractMatrix{<:Number}, q::Real, s::Real)
 
-Ellipsoidal distances from origin with axis ratios `q` and `s`.
+Squared ellipsoidal distances from origin with axis ratios `q` and `s`.
 
 See Eq. 6 in Allgood et al. 2006, https://arxiv.org/abs/astro-ph/0508497
 """
