@@ -75,6 +75,9 @@ GG = GadgetGalaxies
         p[:zs] = [6 5; 4 3; 2 1]
         @test p.Zs == [6 5; 4 3; 2 1]
         @test p.zs === p[:ZS]
+        p["Zs"] = [1 2; 3 4; 5 6]
+        @test p.Zs == [1 2; 3 4; 5 6]
+        @test p.zs === p[:ZS]
 
         @test_throws ErrorException p[:type] = :dm
 

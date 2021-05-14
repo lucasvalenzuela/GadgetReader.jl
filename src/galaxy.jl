@@ -53,6 +53,7 @@ end
 
 Base.getindex(obj::Particles, str::String) = obj.properties[str]
 Base.getindex(obj::Particles, sym::Symbol) = Base.getproperty(obj, sym)
+Base.setindex!(obj::Particles, val, str::String) = Base.setindex!(obj.properties, val, str)
 Base.setindex!(obj::Particles, val, sym::Symbol) = Base.setproperty!(obj, sym, val)
 Base.keys(obj::Particles) = keys(obj.properties) .|> lowercase .|> Symbol
 Base.haskey(obj::Particles, key) = haskey(obj.properties, key)
