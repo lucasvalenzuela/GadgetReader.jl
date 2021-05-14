@@ -376,9 +376,15 @@ r²_circle(pos::AbstractMatrix{<:Number}) = @views @. pos[1, :]^2 + pos[2, :]^2
 """
     r²_sphere(pos::AbstractMatrix{<:Number})
 
-Squared distances in 3D from origin.
+Squared distances from origin in 2D (calls [`r²_circle`](@ref) in those cases) and 3D.
 """
-r²_sphere(pos::AbstractMatrix{<:Number}) = @views @. pos[1, :]^2 + pos[2, :]^2 + pos[3, :]^2
+function r²_sphere(pos::AbstractMatrix{<:Number})
+    if size(pos, 1) == 2
+        return r²_circle(pos)
+    else
+        return @views @. pos[1, :]^2 + pos[2, :]^2 + pos[3, :]^2
+    end
+end
 
 
 """
