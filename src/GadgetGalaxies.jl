@@ -39,6 +39,11 @@ export Snapshot,
        rotate!,
        rotate_edgeon,
        rotate_edgeon!,
+       translate,
+       translate!,
+       center_of_mass_iterative,
+       translate_to_center_of_mass_iterative,
+       translate_to_center_of_mass_iterative!,
 
        # shapes
        Ellipsoid,

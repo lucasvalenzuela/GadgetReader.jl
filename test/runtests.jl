@@ -586,6 +586,41 @@ GG = GadgetGalaxies
             end
             @test err isa ErrorException
         end
+
+        # translation
+        Δx = [1, 2, 3] .* u"kpc"
+        gr2 = deepcopy(gr)
+        x = gr2.gas.pos[:, 1]
+        @test translate(gr2.gas, Δx).pos[:, 1] == x .+ Δx
+        translate!(gr2.gas, Δx)
+        @test gr2.gas.pos[:, 1] == x .+ Δx
+
+        x = gr2.gas.pos[:, 1]
+        @test translate(gr2, Δx).gas.pos[:, 1] == x .+ Δx
+        translate!(gr2, Δx)
+        @test gr2.gas.pos[:, 1] == x .+ Δx
+
+        # center of mass
+        gr2 = deepcopy(gr)
+        a = [-0.036875404, -0.22094725, 0.5704074] .* u"kpc"
+        rstart = 40u"kpc"
+        @test isapprox.(center_of_mass_iterative(gr2, rstart, :gas; limit_fraction=0.01), a; rtol=1e-5) |> all
+        @test isapprox.(
+            translate_to_center_of_mass_iterative(gr2, rstart, :gas).gas.pos,
+            gr2.gas.pos .- a;
+            rtol=1e-5,
+        ) |> all
+        @test gr2.gas.pos == gr.gas.pos
+        translate_to_center_of_mass_iterative!(gr2, rstart, :gas)
+        @test isapprox.(gr2.gas.pos, gr.gas.pos .- a; rtol=1e-5) |> all
+        gr2 = deepcopy(gr)
+        @test isapprox.(
+            translate_to_center_of_mass_iterative(gr2.gas, rstart).pos,
+            gr2.gas.pos .- a;
+            rtol=1e-5,
+        ) |> all
+        translate_to_center_of_mass_iterative!(gr2.gas, rstart)
+        @test isapprox.(gr2.gas.pos, gr.gas.pos .- a; rtol=1e-5) |> all
     end
 
     @info "deleting test data..."
