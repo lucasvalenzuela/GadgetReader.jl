@@ -165,7 +165,7 @@ function translate(p::Particles, x⃗::AbstractVector{<:Number}, prop::Symbol=:p
 
     pc = copy(p)
 
-    if haskey(p, prop)
+    if haskey(pc, prop)
         pc[prop] = pc[prop] .+ x⃗
     end
 
