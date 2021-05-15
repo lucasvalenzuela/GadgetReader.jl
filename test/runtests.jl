@@ -437,9 +437,12 @@ GG = GadgetGalaxies
         GG.fill_𝐈_up!(𝐈, gr.gas.pos, gr.gas.mass, true, :reduced)
         @test isapprox.(𝐈 ./ ustrip(gr.gas.mass[1]), 𝐈_red) |> all # only works because of same gas mass of all
 
-        # ellipsoidal distances
+        # distances
         @test r²_ellipsoid(gr.gas.pos, 0.7, 0.5)[1] ≈ 573.1933u"kpc^2" rtol = 1e-5
         @test r²_ellipsoid(gr.gas.pos, 0.7, nothing)[1] ≈ 514.1716u"kpc^2" rtol = 1e-5
+        @test r²_sphere(gr.gas.pos)[1] ≈ r²_ellipsoid(gr.gas.pos, 1, 1)[1] rtol = 1e-5
+        @test r²_circle([3 2 3; 4 3 1])[1] == 25
+        @test r²_sphere(gr.gas.pos[[1, 2], :])[1] ≈ r²_circle(gr.gas.pos[[1, 2], :])[1] rtol = 1e-5
 
         # ellipsoidal masking
         sph = Sphere(20u"kpc")
@@ -636,11 +639,8 @@ GG = GadgetGalaxies
         translate_to_center_of_velocity!(gr2, radius, :gas)
         @test isapprox.(gr2.gas.vel, gr.gas.vel .- a; rtol=1e-5) |> all
         gr2 = deepcopy(gr)
-        @test isapprox.(
-            translate_to_center_of_velocity(gr2.gas, radius).vel,
-            gr2.gas.vel .- a;
-            rtol=1e-5,
-        ) |> all
+        @test isapprox.(translate_to_center_of_velocity(gr2.gas, radius).vel, gr2.gas.vel .- a; rtol=1e-5) |>
+              all
         translate_to_center_of_velocity!(gr2.gas, radius)
         @test isapprox.(gr2.gas.vel, gr.gas.vel .- a; rtol=1e-5) |> all
     end
