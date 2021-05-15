@@ -62,18 +62,26 @@ function convert_units_full end
 function convert_units_physical end
 function convert_units_physical! end
 
+function simulation_units_pos end
+function simulation_units_pos! end
 function convert_units_pos end
 function convert_units_full_pos end
 function convert_units_physical_pos end
 function convert_units_physical_pos! end
+function simulation_units_vel end
+function simulation_units_vel! end
 function convert_units_vel end
 function convert_units_full_vel end
 function convert_units_physical_vel end
 function convert_units_physical_vel! end
+function simulation_units_temp end
+function simulation_units_temp! end
 function convert_units_temp end
 function convert_units_full_temp end
 function convert_units_physical_temp end
 function convert_units_physical_temp! end
+function simulation_units_mass end
+function simulation_units_mass! end
 function convert_units_mass end
 function convert_units_full_mass end
 function convert_units_physical_mass end
@@ -81,11 +89,7 @@ function convert_units_physical_mass! end
 
 for (type, excl) in [("physical", ""), ("physical", "!"), ("full", "")]
     quote
-        function $(Symbol("convert_units_", type, excl))(
-            vals::AbstractArray{<:Real},
-            prop::Symbol,
-            h,
-        )
+        function $(Symbol("convert_units_", type, excl))(vals::AbstractArray{<:Real}, prop::Symbol, h)
             if prop === :pos
                 $(Symbol("convert_units_", type, "_pos", excl))(vals, h)
             elseif prop === :vel
@@ -129,22 +133,13 @@ for (key, factor, unit, plural, eq) in [
         function $(Symbol("convert_units_full_", key))(val::Real, h)
             $(Symbol("convert_units_physical_", key))(val, h) * $unit
         end
-        function $(Symbol("convert_units_physical_", key))(
-            vals::AbstractArray{T},
-            h,
-        ) where {T<:Real}
+        function $(Symbol("convert_units_physical_", key))(vals::AbstractArray{T}, h) where {T<:Real}
             vals .* convert(T, $factor)
         end
-        function $(Symbol("convert_units_physical_", key, "!"))(
-            vals::AbstractArray{T},
-            h,
-        ) where {T<:Real}
+        function $(Symbol("convert_units_physical_", key, "!"))(vals::AbstractArray{T}, h) where {T<:Real}
             vals .*= convert(T, $factor)
         end
-        function $(Symbol("convert_units_full_", key))(
-            vals::AbstractArray{T},
-            h,
-        ) where {T<:Real}
+        function $(Symbol("convert_units_full_", key))(vals::AbstractArray{T}, h) where {T<:Real}
             vals .* (convert(T, $factor) * $unit)
         end
         function $(Symbol("convert_units_", key))(
@@ -159,6 +154,21 @@ for (key, factor, unit, plural, eq) in [
             else
                 val
             end
+        end
+        function $(Symbol("simulation_units_", key))(val::Quantity{T}, h) where {T}
+            ustrip($unit, val) / convert(T, $factor)
+        end
+        function $(Symbol("simulation_units_", key))(val::T, h) where {T<:Real}
+            val / convert(T, $factor)
+        end
+        function $(Symbol("simulation_units_", key))(vals::AbstractArray{<:Quantity{T}}, h) where {T}
+            ustrip.($unit, vals) ./ convert(T, $factor)
+        end
+        function $(Symbol("simulation_units_", key))(vals::AbstractArray{T}, h) where {T<:Real}
+            vals ./ convert(T, $factor)
+        end
+        function $(Symbol("simulation_units_", key, "!"))(vals::AbstractArray{T}, h) where {T<:Real}
+            vals ./= convert(T, $factor)
         end
     end |> eval
 
@@ -179,6 +189,18 @@ for (key, factor, unit, plural, eq) in [
         # $(Symbol("convert_units_physical_", key)),
         # $(Symbol("convert_units_physical_", key, "!")),
         # $(Symbol("convert_units_full_", key))
+
+        @doc """
+             simulation_units_$($key)(val::Number, h)
+             simulation_units_$($key)(vals::AbstractArray{<:Number}, h)
+             simulation_units_$($key)!(vals::AbstractArray{<:Real}, h)
+
+         Converts $($plural) via ``$(replace($eq, "\\times " => "/ (") * (occursin("times", $eq) ? ")" : ""))``
+         according to the cosmology defined by the snapshot header from physical to simulation units.
+         Unitless parameters need to be given in $(eval($unit)).
+         """
+        $(Symbol("simulation_units_", key))#,
+        # $(Symbol("simulation_units_", key, "!"))
     end |> eval
 end
 

@@ -216,6 +216,31 @@ GG = GadgetGalaxies
         @test convert_units_full_pos(ws, h)[1] .≈ b rtol = 1e-5
         @test convert_units_full_pos(ws, h) |> eltype <: Quantity{Float32}
 
+        af = convert(Float32, a)
+        bf = af * u"kpc"
+        as = [a, a, a]
+        asf = [af, af, af]
+        bs = [b, b, b]
+        bsf = [bf, bf, bf]
+        @test simulation_units_pos(a, h) |> typeof === Float64
+        @test simulation_units_pos(af, h) |> typeof === Float32
+        @test simulation_units_pos(b, h) |> typeof === Float64
+        @test simulation_units_pos(bf, h) |> typeof === Float32
+        @test simulation_units_pos(a, h) ≈ v rtol = 1e-5
+        @test simulation_units_pos(b, h) ≈ v rtol = 1e-5
+        @test simulation_units_pos(b |> u"m", h) ≈ v rtol = 1e-5
+        @test simulation_units_pos(as, h) |> eltype === Float64
+        @test simulation_units_pos(asf, h) |> eltype === Float32
+        @test simulation_units_pos(bs, h) |> eltype === Float64
+        @test simulation_units_pos(bsf, h) |> eltype === Float32
+        @test simulation_units_pos(as, h)[1] ≈ v rtol = 1e-5
+        @test simulation_units_pos(asf, h)[1] ≈ v rtol = 1e-5
+        @test simulation_units_pos(bs, h)[1] ≈ v rtol = 1e-5
+        @test simulation_units_pos(bsf, h)[1] ≈ v rtol = 1e-5
+        @test simulation_units_pos(bs .|> u"m", h)[1] ≈ v rtol = 1e-5
+        simulation_units_pos!(as, h)
+        @test as[1] ≈ v rtol = 1e-5
+
         vs2, ws2 = copy(vs), copy(ws)
         convert_units_physical_pos!(vs2, h)
         @test vs2[1] ≈ a rtol = 1e-5
