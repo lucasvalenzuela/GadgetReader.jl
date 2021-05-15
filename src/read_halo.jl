@@ -48,7 +48,7 @@ function read_halo!(
     snapbase = string(g.snapshot.snapbase)
     subbase = string(g.snapshot.subbase)
 
-    radius_sim = radius_units === :sim ? radius : simulation_units_pos(radius)
+    radius_sim = (isnothing(radius) || radius_units === :sim) ? radius : simulation_units_pos(radius)
 
     # get global halo properties in simulation units
     halo_pos = read_galaxy_pos(g, :sim; verbose)
@@ -117,7 +117,12 @@ end
 
 Returns the particle mass from the first snapfile's header for a particle type (`:dm`, `:gas`, etc.).
 """
-function read_header_particle_mass(snapshot::Snapshot, ptype::Symbol, units::Symbol=:full; verbose::Bool=false)
+function read_header_particle_mass(
+    snapshot::Snapshot,
+    ptype::Symbol,
+    units::Symbol=:full;
+    verbose::Bool=false,
+)
     h = read_header(snapshot.snapbase |> string)
     dm_mass = h.massarr[particle_type_id(ptype) + 1]
     return convert_units_mass(dm_mass, h, units)
