@@ -621,6 +621,28 @@ GG = GadgetGalaxies
         ) |> all
         translate_to_center_of_mass_iterative!(gr2.gas, rstart)
         @test isapprox.(gr2.gas.pos, gr.gas.pos .- a; rtol=1e-5) |> all
+
+        # center of velocity
+        gr2 = deepcopy(gr)
+        a = [99.92409, -50.980724, -64.156525] .* u"km/s"
+        radius = 40u"kpc"
+        @test isapprox.(center_of_velocity(gr2, radius, :gas; p=0.9), a; rtol=1e-5) |> all
+        @test isapprox.(
+            translate_to_center_of_velocity(gr2, radius, :gas).gas.vel,
+            gr2.gas.vel .- a;
+            rtol=1e-5,
+        ) |> all
+        @test gr2.gas.vel == gr.gas.vel
+        translate_to_center_of_velocity!(gr2, radius, :gas)
+        @test isapprox.(gr2.gas.vel, gr.gas.vel .- a; rtol=1e-5) |> all
+        gr2 = deepcopy(gr)
+        @test isapprox.(
+            translate_to_center_of_velocity(gr2.gas, radius).vel,
+            gr2.gas.vel .- a;
+            rtol=1e-5,
+        ) |> all
+        translate_to_center_of_velocity!(gr2.gas, radius)
+        @test isapprox.(gr2.gas.vel, gr.gas.vel .- a; rtol=1e-5) |> all
     end
 
     @info "deleting test data..."

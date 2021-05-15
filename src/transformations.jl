@@ -151,7 +151,7 @@ function rotate_edgeon!(g::AbstractGalaxy, ptype::Symbol=:stars; axis_ratios::Bo
 end
 
 
-@doc raw"""
+"""
     translate(p::Particles, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
     translate!(p::Particles, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
 
@@ -184,7 +184,7 @@ end
 
 
 
-@doc raw"""
+"""
     translate(g::AbstractGalaxy, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
     translate!(g::AbstractGalaxy, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
 
@@ -273,7 +273,7 @@ function center_of_mass_iterative(
 end
 
 
-@doc raw"""
+"""
     center_of_mass_iterative(p::Particles, r_start::Number; kwargs...)
 
 Returns the center of mass of the particles.
@@ -282,7 +282,7 @@ function center_of_mass_iterative(p::Particles, r_start::Number; kwargs...)
     center_of_mass_iterative(p.pos, p.mass, r_start; kwargs...)
 end
 
-@doc raw"""
+"""
     center_of_mass_iterative(g::AbstractGalaxy, r_start::Number, ptype::Symbol=:stars; kwargs...)
 
 Returns the center of mass of the galaxy's particles of type `ptype` (`:stars`, `:dm`, `:gas`, etc.).
@@ -291,25 +291,25 @@ function center_of_mass_iterative(g::AbstractGalaxy, r_start::Number, ptype::Sym
     center_of_mass_iterative(g[ptype], r_start; kwargs...)
 end
 
-@doc raw"""
+"""
     translate_to_center_of_mass_iterative(p::Particles, r_start::Number; kwargs...)
     translate_to_center_of_mass_iterative!(p::Particles, r_start::Number; kwargs...)
 
 Translates the particles to their center of mass of the particles (see [`center_of_mass_iterative`](@ref)).
 """
 function translate_to_center_of_mass_iterative(p::Particles, r_start::Number; kwargs...)
-    x⃗ = center_of_mass_iterative(p.pos, p.mass, r_start; kwargs...)
+    x⃗ = center_of_mass_iterative(p, r_start; kwargs...)
 
     return translate(p, -x⃗)
 end
 
 function translate_to_center_of_mass_iterative!(p::Particles, r_start::Number; kwargs...)
-    x⃗ = center_of_mass_iterative(p.pos, p.mass, r_start; kwargs...)
+    x⃗ = center_of_mass_iterative(p, r_start; kwargs...)
 
     return translate!(p, -x⃗)
 end
 
-@doc raw"""
+"""
     translate_to_center_of_mass_iterative(g::AbstractGalaxy, r_start::Number, ptype::Symbol=:stars; kwargs...)
     translate_to_center_of_mass_iterative!(g::AbstractGalaxy, r_start::Number, ptype::Symbol=:stars; kwargs...)
 
@@ -321,7 +321,7 @@ function translate_to_center_of_mass_iterative(
     ptype::Symbol=:stars;
     kwargs...,
 )
-    x⃗ = center_of_mass_iterative(g[ptype], r_start; kwargs...)
+    x⃗ = center_of_mass_iterative(g, r_start, ptype; kwargs...)
 
     return translate(g, -x⃗)
 end
@@ -332,7 +332,100 @@ function translate_to_center_of_mass_iterative!(
     ptype::Symbol=:stars;
     kwargs...,
 )
-    x⃗ = center_of_mass_iterative(g[ptype], r_start; kwargs...)
+    x⃗ = center_of_mass_iterative(g, r_start, ptype; kwargs...)
 
     return translate!(g, -x⃗)
+end
+
+"""
+    center_of_velocity(
+        pos::AbstractMatrix{<:Number},
+        vel::AbstractMatrix{<:Number},
+        mass::AbstractVector{<:Number},
+        radius::Number;
+        p::Real=0.9,
+        r₀::Union{AbstractVector{<:Number},Nothing}=nothing,
+    )
+
+Returns mass-weighted mean velocity within `radius` around `r₀`, only considering absolute velocities
+smaller than the `p`th quantile (any value between 0 and 1) when centered around the median velocity.
+"""
+function center_of_velocity(
+    pos::AbstractMatrix{<:Number},
+    vel::AbstractMatrix{<:Number},
+    mass::AbstractVector{<:Number},
+    radius::Number;
+    p::Real=0.9,
+    r₀::Union{AbstractVector{<:Number},Nothing}=nothing,
+)
+    if isnothing(r₀)
+        r₀ = zeros(eltype(pos), 3)
+    end
+
+    r² = r²_sphere(pos .- r₀)
+    mask = r² .≤ radius^2
+    v² = @views r²_sphere(vel[:, mask] .- median(vel[:, mask]; dims=2))
+    v²_max = quantile(v², p)
+    mask2 = v² .≤ v²_max
+
+    return @views dropdims(sum(vel[:, mask][:, mask2] .* mass[mask][mask2]'; dims=2); dims=2) ./
+                  sum(mass[mask][mask2])
+end
+
+
+"""
+    center_of_velocity(p::Particles, radius::Number; kwargs...)
+
+Returns the center of velocity of the particles. Requires "POS", "VEL", and "MASS" to be available.
+"""
+function center_of_velocity(p::Particles, radius::Number; kwargs...)
+    center_of_velocity(p.pos, p.vel, p.mass, radius; kwargs...)
+end
+
+"""
+    center_of_velocity(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
+
+Returns the center of velocity of the galaxy's particles of type `ptype` (`:stars`, `:dm`, `:gas`, etc.).
+Requires "POS", "VEL", and "MASS" of the particle type to be available.
+"""
+function center_of_velocity(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
+    center_of_velocity(g[ptype], radius; kwargs...)
+end
+
+"""
+    translate_to_center_of_velocity(p::Particles, radius::Number; kwargs...)
+    translate_to_center_of_velocity!(p::Particles, radius::Number; kwargs...)
+
+Translates the particles to their center of velocity of the particles (see [`center_of_velocity`](@ref)).
+Requires "POS", "VEL", and "MASS" to be available.
+"""
+function translate_to_center_of_velocity(p::Particles, radius::Number; kwargs...)
+    v⃗ = center_of_velocity(p, radius; kwargs...)
+
+    return translate(p, -v⃗, :vel)
+end
+
+function translate_to_center_of_velocity!(p::Particles, radius::Number; kwargs...)
+    v⃗ = center_of_velocity(p, radius; kwargs...)
+
+    return translate!(p, -v⃗, :vel)
+end
+
+"""
+    translate_to_center_of_velocity(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
+    translate_to_center_of_velocity!(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
+
+Translates the particles to their center of velocity of the particles (see [`center_of_velocity`](@ref)).
+Requires "POS", "VEL", and "MASS" of the particle type to be available.
+"""
+function translate_to_center_of_velocity(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
+    v⃗ = center_of_velocity(g, radius, ptype; kwargs...)
+
+    return translate(g, -v⃗, :vel)
+end
+
+function translate_to_center_of_velocity!(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
+    v⃗ = center_of_velocity(g, radius, ptype; kwargs...)
+
+    return translate!(g, -v⃗, :vel)
 end

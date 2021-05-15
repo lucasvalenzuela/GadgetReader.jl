@@ -44,6 +44,9 @@ export Snapshot,
        center_of_mass_iterative,
        translate_to_center_of_mass_iterative,
        translate_to_center_of_mass_iterative!,
+       center_of_velocity,
+       translate_to_center_of_velocity,
+       translate_to_center_of_velocity!,
 
        # shapes
        Ellipsoid,
