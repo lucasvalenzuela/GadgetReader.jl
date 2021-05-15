@@ -18,7 +18,8 @@ end
 Reads particles of a [`Galaxy`](@ref).
 
 # Keywords
-- `radius::Union{Real,Nothing}=nothing`: if `nothing`, the half-mass radius "RHMS"
+- `radius::Union{Number,Nothing}=nothing`: if `nothing`, the half-mass radius "RHMS"
+- `radius_units::Symbol=:physical`: `:physical` or `:sim`, depending on the units of `radius`
 - `rad_scale::Real=1`: read particles within `rad_scale * radius` of halo position
 - `units::Symbol=:full`: use `:full` for units as `Unitful` quantities, `:physical` for values converted
   to physical units (kpc, km/s, solar metallicities etc.), `:sim` for values in simulation units
@@ -32,7 +33,8 @@ Reads particles of a [`Galaxy`](@ref).
 """
 function read_halo!(
     g::AbstractGalaxy;
-    radius::Union{Real,Nothing}=nothing,
+    radius::Union{Number,Nothing}=nothing,
+    radius_units::Symbol=:physical,
     rad_scale::Real=1,
     units::Symbol=:full,
     use_keys::Bool=true,
@@ -45,6 +47,8 @@ function read_halo!(
 )
     snapbase = string(g.snapshot.snapbase)
     subbase = string(g.snapshot.subbase)
+
+    radius_sim = radius_units === :sim ? radius : simulation_units_pos(radius)
 
     # get global halo properties in simulation units
     halo_pos = read_galaxy_pos(g, :sim; verbose)
@@ -64,6 +68,7 @@ function read_halo!(
             getid(g);
             parttype=ptype_id,
             halo_type=get_subfind_type(g),
+            radius=radius_sim,
             rad_scale,
             use_keys,
             verbose,
