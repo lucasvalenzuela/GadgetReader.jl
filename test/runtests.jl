@@ -670,6 +670,20 @@ GG = GadgetGalaxies
         @test isapprox.(gr2.gas.vel, gr.gas.vel .- a; rtol=1e-5) |> all
     end
 
+
+    @testset "Global Properties" begin
+        a = 14.7951u"kpc"
+        @test half_mass_radius(gr.gas.pos) ≈ a rtol = 1e-5
+        @test half_mass_radius(gr.gas.pos, nothing) ≈ a rtol = 1e-5
+        @test half_mass_radius(gr.gas.pos, gr.gas.mass) ≈ a rtol = 1e-5
+        @test half_mass_radius(gr.gas.pos, gr.gas.mass; r_max=20u"kpc") ≈ 11.4378u"kpc" rtol = 1e-5
+        @test half_mass_radius_2D(gr.gas.pos) ≈ 8.31205u"kpc" rtol = 1e-5
+        @test half_mass_radius_2D(gr.gas.pos, nothing; perspective=:sideon) ≈ 12.2065u"kpc" rtol = 1e-5
+        @test half_mass_radius_2D(gr.gas.pos, gr.gas.mass; r_max=20u"kpc", perspective=:faceon) ≈
+              8.32071u"kpc" rtol = 1e-5
+    end
+
+
     @info "deleting test data..."
     for i in 0:3
         rm("./sub_002.$i")

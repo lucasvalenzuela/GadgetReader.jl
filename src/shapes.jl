@@ -150,15 +150,7 @@ function rotation_matrix_2D(
             get_algorithm_variables(algorithm)
     end
 
-    dims = if perspective === :edgeon
-        [1, 3]
-    elseif perspective === :sideon
-        [2, 3]
-    elseif perspective === :faceon
-        [1, 2]
-    else
-        error("`perspective` is $perspective, needs to be one of `:edgeon`, `:sideon`, `:faceon`")
-    end
+    dims = get_dims(perspective)
 
     # select stars within radius if given
     mass = haskey(p, "MASS") ? p.mass : nothing

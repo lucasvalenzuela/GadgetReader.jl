@@ -15,6 +15,7 @@ include("galaxy.jl")
 include("read_halo.jl")
 include("transformations.jl")
 include("shapes.jl")
+include("global_parameters.jl")
 include("units.jl")
 include("utils.jl")
 
@@ -60,6 +61,10 @@ export Snapshot,
        triaxiality,
        ellipticity,
        eccentricity,
+
+       # global parameters
+       half_mass_radius,
+       half_mass_radius_2D,
 
        # units
        convert_units!,
