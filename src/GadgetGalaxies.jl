@@ -16,6 +16,7 @@ include("read_halo.jl")
 include("transformations.jl")
 include("shapes.jl")
 include("global_parameters.jl")
+include("kinematic_parameters.jl")
 include("units.jl")
 include("utils.jl")
 
@@ -65,6 +66,13 @@ export Snapshot,
        # global parameters
        half_mass_radius,
        half_mass_radius_2D,
+
+       # kinematic parameters
+       angular_momentum,
+       b_value,
+       circular_velocity,
+       specific_angular_momentum,
+       spin_parameter,
 
        # units
        convert_units!,

@@ -693,6 +693,79 @@ GG = GadgetGalaxies
     end
 
 
+    @testset "Kinematic Properties" begin
+        # total mass of particle component
+        a = 1.65146e10u"Msun"
+        @test GG.total_mass(gr.gas.pos, gr.gas.mass) ≈ a rtol = 1e-5
+        @test GG.total_mass(gr.gas.pos, gr.gas.mass[1]) ≈ a rtol = 1e-5
+
+        sph = Sphere(20u"kpc")
+
+        # angular momentum
+        a = -8.0944f12u"Msun*kpc*km/s"
+        b = -2.5619f12u"Msun*kpc*km/s"
+        @test angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass)[1] ≈ a rtol = 1e-4
+        @test angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass, sph)[1] ≈ b rtol = 1e-4
+        @test angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass[1], sph)[1] ≈ b rtol = 1e-4
+        @test angular_momentum(gr.gas)[1] ≈ a rtol = 1e-4
+        @test angular_momentum(gr.gas, sph)[1] ≈ b rtol = 1e-4
+
+        # specific angular momentum
+        a = -490.137u"kpc*km/s"
+        b = -250.847u"kpc*km/s"
+        @test specific_angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass)[1] ≈ a rtol = 1e-4
+        @test specific_angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass, sph)[1] ≈ b rtol = 1e-4
+        @test specific_angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass[1], sph)[1] ≈ b rtol = 1e-4
+        @test specific_angular_momentum(gr.gas)[1] ≈ a rtol = 1e-4
+        @test specific_angular_momentum(gr.gas, sph)[1] ≈ b rtol = 1e-4
+        @test specific_angular_momentum(gr.gas, sph; Mtot=sum(gr.gas.mass))[1] ≈ b rtol = 1e-4
+
+        # b-value
+        a = -3.9111
+        b = -3.9541
+        @test b_value(gr.gas.pos, gr.gas.vel, gr.gas.mass) ≈ a rtol = 1e-4
+        @test b_value(gr.gas.pos, gr.gas.vel, gr.gas.mass, sum(gr.gas.mass)) ≈ a rtol = 1e-4
+        @test b_value(ustrip(gr.gas.pos), ustrip(gr.gas.vel), ustrip(gr.gas.mass)) ≈ a rtol = 1e-4
+        @test b_value(gr.gas.pos, gr.gas.vel, gr.gas.mass, sph) ≈ b rtol = 1e-4
+        @test b_value(gr.gas.pos, gr.gas.vel, gr.gas.mass[1], sph) ≈ b rtol = 1e-4
+        @test b_value(gr.gas) ≈ a rtol = 1e-4
+        @test b_value(gr.gas, sph) ≈ b rtol = 1e-4
+
+        # circular velocity
+        a = 103.693
+        @test circular_velocity(2f10, 8) isa Float32
+        @test circular_velocity(2e10, 8) isa Float64
+        @test circular_velocity(2f10, 8.0) isa Float64
+        @test circular_velocity(2, 8) isa Float64
+        @test circular_velocity(2, 8.0) isa Float64
+        @test circular_velocity(2u"Msun", 8u"kpc") isa Quantity{Float64}
+        @test circular_velocity(2.0u"Msun", 8u"kpc") isa Quantity{Float64}
+        @test circular_velocity(2.0f0u"Msun", 8u"kpc") isa Quantity{Float32}
+        @test circular_velocity(2.0f0u"Msun", 8.0f0u"kpc") isa Quantity{Float32}
+        @test circular_velocity(2.0e0u"Msun", 8.0f0u"kpc") isa Quantity{Float64}
+        @test circular_velocity(2f10, 8) ≈ a rtol = 1e-5
+        @test circular_velocity(2f10u"Msun", 8u"kpc") ≈ a * u"km/s" rtol = 1e-5
+
+        # spin parameter
+        r = 40u"kpc"
+        a = 0.333810
+        b = 0.310343
+        c = 0.356085
+        @test spin_parameter(gr.gas.pos, gr.gas.vel, gr.gas.mass, sum(gr.gas.mass), r) ≈ a rtol = 1e-4
+        @test spin_parameter(gr.gas.pos, gr.gas.vel, gr.gas.mass, sum(gr.gas.mass), sph) ≈ b rtol = 1e-4
+        @test spin_parameter(gr.gas.pos, gr.gas.vel, gr.gas.mass[1], sum(gr.gas.mass), sph) ≈ b rtol = 1e-4
+        @test spin_parameter(gr.gas, sum(gr.gas.mass), sph.radius) ≈ b rtol = 1e-4
+        mask = gr.gas.pos[1, :] .< 3.5u"kpc"
+        @test spin_parameter(gr.gas, sum(gr.gas.mass), sph.radius; mask) ≈ c rtol =
+            1e-4
+
+        gr2 = deepcopy(gr)
+        gr2.dm = gr2.gas
+        gr2.stars = gr2.gas
+        @test spin_parameter(gr2, 3sum(gr.gas.mass), r) ≈ 0.192725 rtol = 1e-4
+    end
+
+
     @info "deleting test data..."
     for i in 0:3
         rm("./sub_002.$i")
