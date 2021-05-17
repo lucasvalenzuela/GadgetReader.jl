@@ -68,7 +68,7 @@ function read_halo!(
             getid(g);
             parttype=ptype_id,
             halo_type=get_subfind_type(g),
-            radius=radius_sim,
+            # radius=radius_sim,
             rad_scale,
             use_keys,
             verbose,
