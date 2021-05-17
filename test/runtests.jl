@@ -717,6 +717,7 @@ GG = GadgetGalaxies
         @test specific_angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass, sph)[1] ≈ b rtol = 1e-4
         @test specific_angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass[1], sph)[1] ≈ b rtol = 1e-4
         @test specific_angular_momentum(gr.gas)[1] ≈ a rtol = 1e-4
+        @test specific_angular_momentum(gr.gas; Mtot=sum(gr.gas.mass))[1] ≈ a rtol = 1e-4
         @test specific_angular_momentum(gr.gas, sph)[1] ≈ b rtol = 1e-4
         @test specific_angular_momentum(gr.gas, sph; Mtot=sum(gr.gas.mass))[1] ≈ b rtol = 1e-4
 
