@@ -34,13 +34,13 @@ function convert_units_subfind_prop(
     units::Symbol=:full;
     verbose::Bool=false,
 )
-    # TODO: SPIN (units?), DSUB (vel. dispersion units?), SMST (subhalo mass table units?),
+    # TODO: SPIN (units: angular momentum), DSUB (vel. dispersion units?),
     # SLUM, SLAT, SLOB, DUST, SZ (units?), SSFR (units really M⊙/yr?)
     if prop[1] === 'R' || prop in ["GPOS", "BGPO", "BGRA", "SPOS", "SCM", "SHMR"]
         return convert_units_pos(val, h, units)
     elseif prop[1] === 'V' || prop in ["SVEL"]
         return convert_units_vel(val, h, units)
-    elseif (prop[1] === 'M' && prop != "MBID") || prop in ["BGMA"]
+    elseif (prop[1] === 'M' && prop != "MBID") || prop in ["BGMA", "SMST"]
         return convert_units_mass(val, h, units)
     elseif prop in ["SAGE"]
         return convert_units_age(val, h, units)
@@ -62,18 +62,26 @@ function convert_units_full end
 function convert_units_physical end
 function convert_units_physical! end
 
+function simulation_units_pos end
+function simulation_units_pos! end
 function convert_units_pos end
 function convert_units_full_pos end
 function convert_units_physical_pos end
 function convert_units_physical_pos! end
+function simulation_units_vel end
+function simulation_units_vel! end
 function convert_units_vel end
 function convert_units_full_vel end
 function convert_units_physical_vel end
 function convert_units_physical_vel! end
+function simulation_units_temp end
+function simulation_units_temp! end
 function convert_units_temp end
 function convert_units_full_temp end
 function convert_units_physical_temp end
 function convert_units_physical_temp! end
+function simulation_units_mass end
+function simulation_units_mass! end
 function convert_units_mass end
 function convert_units_full_mass end
 function convert_units_physical_mass end
@@ -81,11 +89,7 @@ function convert_units_physical_mass! end
 
 for (type, excl) in [("physical", ""), ("physical", "!"), ("full", "")]
     quote
-        function $(Symbol("convert_units_", type, excl))(
-            vals::AbstractArray{<:Real},
-            prop::Symbol,
-            h,
-        )
+        function $(Symbol("convert_units_", type, excl))(vals::AbstractArray{<:Real}, prop::Symbol, h)
             if prop === :pos
                 $(Symbol("convert_units_", type, "_pos", excl))(vals, h)
             elseif prop === :vel
@@ -116,11 +120,32 @@ convert_units_physical,
 #convert_units_physical!,
 convert_units_full
 
-for (key, factor, unit, plural, eq) in [
-    ("pos", :(1 / (h.h0 * (h.z + 1))), :(u"kpc"), "positions", raw"x \to x/(h_0 (z+1)))"),
-    ("vel", :(1 / sqrt(h.z + 1)), :(u"km/s"), "velocities", raw"v \to v/\sqrt{z+1})"),
-    ("temp", :(1), :(u"K"), "temperatures", raw"T \to T"),
-    ("mass", :(1e10 / h.h0), :(u"Msun"), "masses", raw"m \to m \times 10^{10} / h_0"),
+for (key, factor, unit, plural, eq, eqsim) in [
+    (
+        "pos",
+        :(1 / (h.h0 * (h.z + 1))),
+        :(u"kpc"),
+        "positions",
+        raw"x \to x/(h_0 (z+1)))",
+        raw"x \to x \times h_0 (z+1)",
+    ),
+    (
+        "vel",
+        :(1 / sqrt(h.z + 1)),
+        :(u"km/s"),
+        "velocities",
+        raw"v \to v/\sqrt{z+1})",
+        raw"v \to v \times \sqrt{z+1}",
+    ),
+    ("temp", :(1), :(u"K"), "temperatures", raw"T \to T", raw"T \to T"),
+    (
+        "mass",
+        :(1e10 / h.h0),
+        :(u"Msun"),
+        "masses",
+        raw"m \to m \times 10^{10} / h_0",
+        raw"m \to m \times h_0 / 10^{10}",
+    ),
 ]
     quote
         function $(Symbol("convert_units_physical_", key))(val::T, h) where {T<:Real}
@@ -129,22 +154,13 @@ for (key, factor, unit, plural, eq) in [
         function $(Symbol("convert_units_full_", key))(val::Real, h)
             $(Symbol("convert_units_physical_", key))(val, h) * $unit
         end
-        function $(Symbol("convert_units_physical_", key))(
-            vals::AbstractArray{T},
-            h,
-        ) where {T<:Real}
+        function $(Symbol("convert_units_physical_", key))(vals::AbstractArray{T}, h) where {T<:Real}
             vals .* convert(T, $factor)
         end
-        function $(Symbol("convert_units_physical_", key, "!"))(
-            vals::AbstractArray{T},
-            h,
-        ) where {T<:Real}
+        function $(Symbol("convert_units_physical_", key, "!"))(vals::AbstractArray{T}, h) where {T<:Real}
             vals .*= convert(T, $factor)
         end
-        function $(Symbol("convert_units_full_", key))(
-            vals::AbstractArray{T},
-            h,
-        ) where {T<:Real}
+        function $(Symbol("convert_units_full_", key))(vals::AbstractArray{T}, h) where {T<:Real}
             vals .* (convert(T, $factor) * $unit)
         end
         function $(Symbol("convert_units_", key))(
@@ -159,6 +175,21 @@ for (key, factor, unit, plural, eq) in [
             else
                 val
             end
+        end
+        function $(Symbol("simulation_units_", key))(val::Quantity{T}, h) where {T}
+            ustrip($unit, val) / convert(T, $factor)
+        end
+        function $(Symbol("simulation_units_", key))(val::T, h) where {T<:Real}
+            val / convert(T, $factor)
+        end
+        function $(Symbol("simulation_units_", key))(vals::AbstractArray{<:Quantity{T}}, h) where {T}
+            ustrip.($unit, vals) ./ convert(T, $factor)
+        end
+        function $(Symbol("simulation_units_", key))(vals::AbstractArray{T}, h) where {T<:Real}
+            vals ./ convert(T, $factor)
+        end
+        function $(Symbol("simulation_units_", key, "!"))(vals::AbstractArray{T}, h) where {T<:Real}
+            vals ./= convert(T, $factor)
         end
     end |> eval
 
@@ -179,6 +210,18 @@ for (key, factor, unit, plural, eq) in [
         # $(Symbol("convert_units_physical_", key)),
         # $(Symbol("convert_units_physical_", key, "!")),
         # $(Symbol("convert_units_full_", key))
+
+        @doc """
+             simulation_units_$($key)(val::Number, h)
+             simulation_units_$($key)(vals::AbstractArray{<:Number}, h)
+             simulation_units_$($key)!(vals::AbstractArray{<:Real}, h)
+
+         Converts $($plural) via ``$($eqsim)`` according to the cosmology defined by the snapshot
+         header from physical to simulation units.
+         Unitless parameters need to be given in $(eval($unit)).
+         """
+        $(Symbol("simulation_units_", key))#,
+        # $(Symbol("simulation_units_", key, "!"))
     end |> eval
 end
 
