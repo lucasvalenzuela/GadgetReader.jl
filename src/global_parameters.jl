@@ -74,6 +74,23 @@ end
 
 half_mass_radius(pos::AbstractMatrix{<:Number}, mass::Nothing; kwargs...) = half_mass_radius(pos, kwargs...)
 
+"""
+    half_mass_radius(g::AbstractGalaxy, ptype::Symbol; kwargs...)
+    half_mass_radius(p::Particles; kwargs...)
+
+Returns the particles' half-mass radius, depending on if a mass vector is available or not.
+If the mass is not available, equal particle masses are assumed.
+"""
+function half_mass_radius(p::Particles; kwargs...)
+    if haskey(p, :mass) && p.mass isa AbstractVector
+        half_mass_radius(p.pos, p.mass; kwargs...)
+    else
+        half_mass_radius(p.pos; kwargs...)
+    end
+end
+
+half_mass_radius(g::AbstractGalaxy, ptype::Symbol; kwargs...) = half_mass_radius(g[ptype]; kwargs...)
+
 
 """
     half_mass_radius_2D(
@@ -123,3 +140,20 @@ end
 function half_mass_radius_2D(pos::AbstractMatrix{<:Number}, mass::Nothing; kwargs...)
     half_mass_radius_2D(pos; kwargs...)
 end
+
+"""
+    half_mass_radius_2D(g::AbstractGalaxy, ptype::Symbol; kwargs...)
+    half_mass_radius_2D(p::Particles; kwargs...)
+
+Returns the particles' 2D half-mass radius, depending on if a mass vector is available or not.
+If the mass is not available, equal particle masses are assumed.
+"""
+function half_mass_radius_2D(p::Particles; kwargs...)
+    if haskey(p, :mass) && p.mass isa AbstractVector
+        half_mass_radius_2D(p.pos, p.mass; kwargs...)
+    else
+        half_mass_radius_2D(p.pos; kwargs...)
+    end
+end
+
+half_mass_radius_2D(g::AbstractGalaxy, ptype::Symbol; kwargs...) = half_mass_radius_2D(g[ptype]; kwargs...)

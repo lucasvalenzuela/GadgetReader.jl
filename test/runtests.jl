@@ -673,14 +673,23 @@ GG = GadgetGalaxies
 
     @testset "Global Properties" begin
         a = 14.7951u"kpc"
+        b = 11.4378u"kpc"
         @test half_mass_radius(gr.gas.pos) ≈ a rtol = 1e-5
         @test half_mass_radius(gr.gas.pos, nothing) ≈ a rtol = 1e-5
         @test half_mass_radius(gr.gas.pos, gr.gas.mass) ≈ a rtol = 1e-5
-        @test half_mass_radius(gr.gas.pos, gr.gas.mass; r_max=20u"kpc") ≈ 11.4378u"kpc" rtol = 1e-5
+        @test half_mass_radius(gr.gas.pos, gr.gas.mass; r_max=20u"kpc") ≈ b rtol = 1e-5
+        @test half_mass_radius(gr.gas; r_max=20u"kpc") ≈ b rtol = 1e-5
+        @test half_mass_radius(gr, :gas; r_max=20u"kpc") ≈ b rtol = 1e-5
+        @test half_mass_radius(gr.dm; r_max=20u"kpc") ≈ 11.9408u"kpc" rtol = 1e-5
+
+        c = 12.2065u"kpc"
         @test half_mass_radius_2D(gr.gas.pos) ≈ 8.31205u"kpc" rtol = 1e-5
-        @test half_mass_radius_2D(gr.gas.pos, nothing; perspective=:sideon) ≈ 12.2065u"kpc" rtol = 1e-5
+        @test half_mass_radius_2D(gr.gas.pos, nothing; perspective=:sideon) ≈ c rtol = 1e-5
         @test half_mass_radius_2D(gr.gas.pos, gr.gas.mass; r_max=20u"kpc", perspective=:faceon) ≈
               8.32071u"kpc" rtol = 1e-5
+        @test half_mass_radius_2D(gr.gas; perspective=:sideon) ≈ c rtol = 1e-5
+        @test half_mass_radius_2D(gr, :gas; perspective=:sideon) ≈ c rtol = 1e-5
+        @test half_mass_radius_2D(gr.dm; r_max=20u"kpc") ≈ 9.79665u"kpc" rtol = 1e-5
     end
 
 
