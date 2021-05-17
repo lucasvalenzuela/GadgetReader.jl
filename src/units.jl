@@ -120,11 +120,32 @@ convert_units_physical,
 #convert_units_physical!,
 convert_units_full
 
-for (key, factor, unit, plural, eq) in [
-    ("pos", :(1 / (h.h0 * (h.z + 1))), :(u"kpc"), "positions", raw"x \to x/(h_0 (z+1)))"),
-    ("vel", :(1 / sqrt(h.z + 1)), :(u"km/s"), "velocities", raw"v \to v/\sqrt{z+1})"),
-    ("temp", :(1), :(u"K"), "temperatures", raw"T \to T"),
-    ("mass", :(1e10 / h.h0), :(u"Msun"), "masses", raw"m \to m \times 10^{10} / h_0"),
+for (key, factor, unit, plural, eq, eqsim) in [
+    (
+        "pos",
+        :(1 / (h.h0 * (h.z + 1))),
+        :(u"kpc"),
+        "positions",
+        raw"x \to x/(h_0 (z+1)))",
+        raw"x \to x \times h_0 (z+1)",
+    ),
+    (
+        "vel",
+        :(1 / sqrt(h.z + 1)),
+        :(u"km/s"),
+        "velocities",
+        raw"v \to v/\sqrt{z+1})",
+        raw"v \to v \times \sqrt{z+1}",
+    ),
+    ("temp", :(1), :(u"K"), "temperatures", raw"T \to T", raw"T \to T"),
+    (
+        "mass",
+        :(1e10 / h.h0),
+        :(u"Msun"),
+        "masses",
+        raw"m \to m \times 10^{10} / h_0",
+        raw"m \to m \times h_0 / 10^{10}",
+    ),
 ]
     quote
         function $(Symbol("convert_units_physical_", key))(val::T, h) where {T<:Real}
@@ -195,8 +216,8 @@ for (key, factor, unit, plural, eq) in [
              simulation_units_$($key)(vals::AbstractArray{<:Number}, h)
              simulation_units_$($key)!(vals::AbstractArray{<:Real}, h)
 
-         Converts $($plural) via ``$(replace($eq, "\\times " => "/ (") * (occursin("times", $eq) ? ")" : ""))``
-         according to the cosmology defined by the snapshot header from physical to simulation units.
+         Converts $($plural) via ``$($eqsim)`` according to the cosmology defined by the snapshot
+         header from physical to simulation units.
          Unitless parameters need to be given in $(eval($unit)).
          """
         $(Symbol("simulation_units_", key))#,
