@@ -113,7 +113,7 @@ function read_redshift(snapshot::Snapshot)
 end
 
 """
-    read_dm_particle_mass(snapshot::Snapshot, units::Symbol=:full; verbose::Bool=false)
+    read_dm_particle_mass(snapshot::Snapshot, ptype::Symbol[, units=:full]; verbose::Bool=false)
 
 Returns the particle mass from the first snapfile's header for a particle type (`:dm`, `:gas`, etc.).
 """

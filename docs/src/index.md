@@ -32,7 +32,7 @@ simdir = "directory/of/simulation"
 snapshot = Snapshot(simdir, 140)
 ```
 
-To prepare a [`Galaxy`](@ref) or [`GalaxyGroup`] for reading its particles, pass it the zero-based index of the subhalo in subfind:
+To prepare a [`Galaxy`](@ref) or [`GalaxyGroup`](@ref) for reading its particles, pass it the zero-based index of the subhalo in subfind:
 
 ```julia
 g = Galaxy(snapshot, 1234)
