@@ -10,6 +10,15 @@ total_mass(pos::AbstractMatrix{<:Number}, mass::AbstractVector{<:Number}) = tota
 
 Returns the total angular momentum ``J = \sum_i m_i \mathbf{r}_i \times \mathbf{v}_i`` within the
 ellipsoid if given. Values are assumed to be in kpc, km/s, and solar masses.
+
+```julia
+using Unitful, UnitfulAstro
+
+g::Galaxy # assume an already read-in galaxy with :full units
+sph = Sphere(8u"kpc")
+
+J = angular_momentum(g.stars, sph)
+```
 """
 function angular_momentum(
     pos::AbstractMatrix{<:Number},
@@ -55,6 +64,16 @@ end
 
 Returns the specific angular momentum ``j = \sum_i m_i \mathbf{r}_i \times \mathbf{v}_i / \sum_i m_i``
 within the ellipsoid if given. Values are assumed to be in kpc, km/s, and solar masses.
+The total mass can be provided via `Mtot` if already known.
+
+```julia
+using Unitful, UnitfulAstro
+
+g::Galaxy # assume an already read-in galaxy with :full units
+sph = Sphere(8u"kpc")
+
+j = specific_angular_momentum(g.stars, sph)
+```
 """
 function specific_angular_momentum(
     pos::AbstractMatrix{<:Number},
@@ -110,6 +129,15 @@ end
 Returns the b-value ``b = \log(j / (\mathrm{km/s})) - 2/3 \log(M_\mathrm{tot}/\mathrm{M}_\odot)``,
 where ``j`` is the [`specific_angular_momentum`](@ref). Values are assumed to be in kpc, km/s, and
 solar masses.
+
+```julia
+using Unitful, UnitfulAstro
+
+g::Galaxy # assume an already read-in galaxy with :full units
+sph = Sphere(8u"kpc")
+
+b = b_value(g.stars, sph)
+```
 """
 function b_value(
     pos::AbstractMatrix{<:Real},

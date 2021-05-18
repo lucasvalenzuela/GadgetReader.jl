@@ -3,26 +3,26 @@
         pos::AbstractMatrix{<:Number},
         mass::Union{AbstractVector{<:Number},Nothing},
         [r²::AbstractVector{<:Number}];
-        r_max::Union{Number,Nothing}=nothing,
+        rmax::Union{Number,Nothing}=nothing,
     )
 
-Returns the half-mass radius of the particles within radius `r_max`, or of all particles if `r_max`
+Returns the half-mass radius of the particles within radius `rmax`, or of all particles if `rmax`
 is `nothing`.
 """
 function half_mass_radius(
     pos::AbstractMatrix{<:Number},
     mass::AbstractVector{<:Number},
     r²::AbstractVector{<:Number};
-    r_max::Union{Number,Nothing}=nothing,
+    rmax::Union{Number,Nothing}=nothing,
 )
     # check dimensions
     @assert size(pos, 1) == 3
     @assert length(mass) == size(pos, 2) == length(r²)
 
-    if isnothing(r_max)
+    if isnothing(rmax)
         mask = (:) # all particles
     else
-        mask = r² .≤ r_max^2
+        mask = r² .≤ rmax^2
     end
 
     mass_half = @views 1 // 2 * sum(mass[mask])
@@ -46,28 +46,28 @@ end
 function half_mass_radius(
     pos::AbstractMatrix{<:Number},
     mass::AbstractVector{<:Number};
-    r_max::Union{Number,Nothing}=nothing,
+    rmax::Union{Number,Nothing}=nothing,
 )
     r² = r²_sphere(pos)
-    half_mass_radius(pos, mass, r²; r_max)
+    half_mass_radius(pos, mass, r²; rmax)
 end
 
 """
-    half_mass_radius(pos::AbstractMatrix{<:Number}; r_max::Union{Number,Nothing}=nothing)
+    half_mass_radius(pos::AbstractMatrix{<:Number}; rmax::Union{Number,Nothing}=nothing)
 
-Returns the half-mass radius of the particles within radius `r_max` assuming equal masses of all
-particles, or of all particles if `r_max` is `nothing`.
+Returns the half-mass radius of the particles within radius `rmax` assuming equal masses of all
+particles, or of all particles if `rmax` is `nothing`.
 """
-function half_mass_radius(pos::AbstractMatrix{<:Number}; r_max::Union{Number,Nothing}=nothing)
+function half_mass_radius(pos::AbstractMatrix{<:Number}; rmax::Union{Number,Nothing}=nothing)
     # check dimensions
     @assert size(pos, 1) == 3
 
     r² = r²_sphere(pos)
 
-    if isnothing(r_max)
+    if isnothing(rmax)
         return quantile(sqrt.(r²), 0.5)
     else
-        mask = r² .≤ r_max^2
+        mask = r² .≤ rmax^2
         return @views quantile(sqrt.(r²[mask]), 0.5)
     end
 end
@@ -96,17 +96,17 @@ half_mass_radius(g::AbstractGalaxy, ptype::Symbol; kwargs...) = half_mass_radius
     half_mass_radius_2D(
         pos::AbstractMatrix{<:Number},
         [mass::Union{AbstractVector{<:Number},Nothing}];
-        r_max::Union{Number,Nothing}=nothing,
+        rmax::Union{Number,Nothing}=nothing,
         perspective::Symbol=:edgeon,
     )
 
-Returns the 2D half-mass radius of the particles within radius `r_max` when viewed from a given
-`perspective` (`:edgeon`, `:sideon`, `:faceon`), or of all particles if `r_max` is `nothing`.
+Returns the 2D half-mass radius of the particles within radius `rmax` when viewed from a given
+`perspective` (`:edgeon`, `:sideon`, `:faceon`), or of all particles if `rmax` is `nothing`.
 """
 function half_mass_radius_2D(
     pos::AbstractMatrix{<:Number},
     mass::AbstractVector{<:Number};
-    r_max::Union{Number,Nothing}=nothing,
+    rmax::Union{Number,Nothing}=nothing,
     perspective::Symbol=:edgeon,
 )
     # check dimensions
@@ -115,12 +115,12 @@ function half_mass_radius_2D(
     dims = get_dims(perspective)
     r² = @views r²_circle(pos[dims, :])
 
-    return half_mass_radius(pos, mass, r²; r_max)
+    return half_mass_radius(pos, mass, r²; rmax)
 end
 
 function half_mass_radius_2D(
     pos::AbstractMatrix{<:Number};
-    r_max::Union{Number,Nothing}=nothing,
+    rmax::Union{Number,Nothing}=nothing,
     perspective::Symbol=:edgeon,
 )
     # check dimensions
@@ -129,10 +129,10 @@ function half_mass_radius_2D(
     dims = get_dims(perspective)
     r² = @views r²_circle(pos[dims, :])
 
-    if isnothing(r_max)
+    if isnothing(rmax)
         return quantile(sqrt.(r²), 0.5)
     else
-        mask = r² .≤ r_max^2
+        mask = r² .≤ rmax^2
         return @views quantile(sqrt.(r²[mask]), 0.5)
     end
 end

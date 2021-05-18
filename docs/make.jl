@@ -15,6 +15,7 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Kinematic Parameters" => "kinematic_parameters.md",
         "API" => "api.md",
     ],
 )
