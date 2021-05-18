@@ -5,7 +5,7 @@ DocMeta.setdocmeta!(GadgetGalaxies, :DocTestSetup, :(using GadgetGalaxies); recu
 
 makedocs(;
     modules=[GadgetGalaxies],
-    authors="Lucas Valenzuela <lucasvalenzuela@users.noreply.github.com> and contributors",
+    authors="Lucas Valenzuela <lucasvalenzuela@users.noreply.github.com>",
     repo="https://github.com/lucasvalenzuela/GadgetGalaxies.jl/blob/{commit}{path}#{line}",
     sitename="GadgetGalaxies.jl",
     format=Documenter.HTML(;
@@ -15,6 +15,7 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "API" => "api.md",
     ],
 )
 
