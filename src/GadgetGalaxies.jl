@@ -35,6 +35,8 @@ export Snapshot,
        read_galaxy_pos,
        read_galaxy_vel,
        is_main_halo,
+       get_group,
+       get_first_subhalo,
 
        # transformations
        rotate,

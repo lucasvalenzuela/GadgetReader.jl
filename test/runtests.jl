@@ -343,6 +343,9 @@ GG = GadgetGalaxies
         @test read_galaxy_pos(g) == read_galaxy_pos(gr)
         @test read_galaxy_vel(g) == read_galaxy_vel(gr)
         @test is_main_halo(g)
+
+        @test get_group(g).groupid == gr.groupid
+        @test get_first_subhalo(gr).subid == g.subid
     end
 
     @testset "Read Halo" begin

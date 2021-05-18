@@ -193,3 +193,25 @@ function is_main_halo(g::Galaxy)
     ifsub, _ = read_halo_prop_and_id(subbase, grnr, "FSUB", nfiles; verbose=false)
     return g.isub == ifsub
 end
+
+"""
+    get_group(g::Galaxy)
+
+Returns the corresponding [`GalaxyGroup`](@ref) of the given [`Galaxy`](@ref).
+"""
+function get_group(g::Galaxy)
+    subbase = string(g.snapshot.subbase)
+    grnr = read_halo_prop(subbase, g.subid, "GRNR"; verbose=false)
+    return GalaxyGroup(g.snapshot, grnr)
+end
+
+"""
+    get_first_subhalo(gr::GalaxyGroup)
+
+Returns the first Subhalo [`Galaxy`](@ref) of the given [`GalaxyGroup`](@ref).
+"""
+function get_first_subhalo(gr::GalaxyGroup)
+    subbase = string(gr.snapshot.subbase)
+    ifsub = read_halo_prop(subbase, gr.groupid, "FSUB"; verbose=false)
+    return Galaxy(gr.snapshot, ifsub)
+end
