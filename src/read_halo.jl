@@ -139,6 +139,16 @@ function read_galaxy_prop(g::AbstractGalaxy, prop::AbstractString, units::Symbol
 
     val = read_halo_prop(subbase, getid(g), prop; verbose)
 
+    # take care of SVEL (saved in physical units in subfind)
+    if prop == "SVEL"
+        units === :physical && return val
+        units === :full && return val * u"km/s"
+
+        # units === :sim
+        h = read_subfind_header(subbase)
+        return simulation_units_vel(val, h)
+    end
+
     # if units are not supposed to be converted
     units === :sim && return val
 
@@ -174,11 +184,14 @@ function read_galaxy_vel(g::GalaxyGroup, units::Symbol=:full; verbose::Bool=fals
     nfiles = read_subfind_header(subbase).num_files
     val, _ = read_halo_prop_and_id(subbase, ifsub, "SVEL", nfiles; verbose)
 
+    # SVEL is already in physical units (km/s)
     # if units are not supposed to be converted
-    units === :sim && return val
+    units === :physical && return val
+    units === :full && return val * u"km/s"
 
+    # units === :sim
     h = read_subfind_header(subbase)
-    return convert_units_subfind_prop(val, "SVEL", h, units)
+    return simulation_units_vel(val, h)
 end
 
 """

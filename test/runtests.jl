@@ -332,7 +332,8 @@ GG = GadgetGalaxies
         @test read_galaxy_prop(g, "MSUB", :full) ≈ 1.27468f11u"Msun" rtol = 1e-5
         @test read_galaxy_prop(g, "SPOS") |> length == 3
         @test read_galaxy_prop(g, "SPOS")[1] ≈ -413.854u"kpc" rtol = 1e-5
-        @test read_galaxy_prop(g, "SVEL")[1] ≈ 83.1962u"km/s" rtol = 1e-5
+        # @test read_galaxy_prop(g, "SVEL")[1] ≈ 83.1962u"km/s" rtol = 1e-5
+        @test read_galaxy_prop(g, "SVEL")[1] ≈ 186.032u"km/s" rtol = 1e-5
         @test read_galaxy_prop(g, "GRNR") == 0
         info = "Reading property GRNR of halo HaloID(0, 1)"
         warn = "The quantity GRNR is returned in simulation units"
@@ -382,7 +383,8 @@ GG = GadgetGalaxies
         @test a == b
 
         p11 = 2.45564u"kpc"
-        v12 = 90.39079u"km/s"
+        # v12 = 90.39079u"km/s"
+        v12 = -12.44545u"km/s"
         @test g.dm.pos[1, 1] ≈ p11 rtol = 1e-5
         @test g.gas.vel[1, 2] ≈ v12 rtol = 1e-5
         gc = rotate(g, R)
@@ -639,7 +641,7 @@ GG = GadgetGalaxies
         @test isapprox.(
             translate_to_center_of_mass_iterative(gr2, rstart, :gas).gas.pos,
             gr2.gas.pos .- a;
-            rtol=1e-5,
+            rtol=1e-4,
         ) |> all
         @test gr2.gas.pos == gr.gas.pos
         translate_to_center_of_mass_iterative!(gr2, rstart, :gas)
@@ -648,29 +650,30 @@ GG = GadgetGalaxies
         @test isapprox.(
             translate_to_center_of_mass_iterative(gr2.gas, rstart).pos,
             gr2.gas.pos .- a;
-            rtol=1e-5,
+            rtol=1e-4,
         ) |> all
         translate_to_center_of_mass_iterative!(gr2.gas, rstart)
         @test isapprox.(gr2.gas.pos, gr.gas.pos .- a; rtol=1e-5) |> all
 
         # center of velocity
         gr2 = deepcopy(gr)
-        a = [99.92409, -50.980724, -64.156525] .* u"km/s"
+        # a = [99.92409, -50.980724, -64.156525] .* u"km/s"
+        a = [-2.912147, 3.523651, 13.41185] .* u"km/s"
         radius = 40u"kpc"
         @test isapprox.(center_of_velocity(gr2, radius, :gas; p=0.9), a; rtol=1e-5) |> all
         @test isapprox.(
             translate_to_center_of_velocity(gr2, radius, :gas).gas.vel,
             gr2.gas.vel .- a;
-            rtol=1e-5,
+            rtol=1e-4,
         ) |> all
         @test gr2.gas.vel == gr.gas.vel
         translate_to_center_of_velocity!(gr2, radius, :gas)
-        @test isapprox.(gr2.gas.vel, gr.gas.vel .- a; rtol=1e-5) |> all
+        @test isapprox.(gr2.gas.vel, gr.gas.vel .- a; rtol=1e-4) |> all
         gr2 = deepcopy(gr)
-        @test isapprox.(translate_to_center_of_velocity(gr2.gas, radius).vel, gr2.gas.vel .- a; rtol=1e-5) |>
+        @test isapprox.(translate_to_center_of_velocity(gr2.gas, radius).vel, gr2.gas.vel .- a; rtol=1e-4) |>
               all
         translate_to_center_of_velocity!(gr2.gas, radius)
-        @test isapprox.(gr2.gas.vel, gr.gas.vel .- a; rtol=1e-5) |> all
+        @test isapprox.(gr2.gas.vel, gr.gas.vel .- a; rtol=1e-4) |> all
     end
 
 
@@ -705,8 +708,10 @@ GG = GadgetGalaxies
         sph = Sphere(20u"kpc")
 
         # angular momentum
-        a = -8.0944f12u"Msun*kpc*km/s"
-        b = -2.5619f12u"Msun*kpc*km/s"
+        # a = -8.0944f12u"Msun*kpc*km/s"
+        a = -1.8541f11u"Msun*kpc*km/s"
+        # b = -2.5619f12u"Msun*kpc*km/s"
+        b = 1.10949f12u"Msun*kpc*km/s"
         @test angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass)[1] ≈ a rtol = 1e-4
         @test angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass, sph)[1] ≈ b rtol = 1e-4
         @test angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass[1], sph)[1] ≈ b rtol = 1e-4
@@ -714,8 +719,10 @@ GG = GadgetGalaxies
         @test angular_momentum(gr.gas, sph)[1] ≈ b rtol = 1e-4
 
         # specific angular momentum
-        a = -490.137u"kpc*km/s"
-        b = -250.847u"kpc*km/s"
+        # a = -490.137u"kpc*km/s"
+        # b = -250.847u"kpc*km/s"
+        a = -11.2274u"kpc*km/s"
+        b = 108.6355u"kpc*km/s"
         @test specific_angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass)[1] ≈ a rtol = 1e-4
         @test specific_angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass, sph)[1] ≈ b rtol = 1e-4
         @test specific_angular_momentum(gr.gas.pos, gr.gas.vel, gr.gas.mass[1], sph)[1] ≈ b rtol = 1e-4
@@ -725,8 +732,10 @@ GG = GadgetGalaxies
         @test specific_angular_momentum(gr.gas, sph; Mtot=sum(gr.gas.mass))[1] ≈ b rtol = 1e-4
 
         # b-value
-        a = -3.9111
-        b = -3.9541
+        # a = -3.9111
+        # b = -3.9541
+        a = -4.4449
+        b = -4.2247
         @test b_value(gr.gas.pos, gr.gas.vel, gr.gas.mass) ≈ a rtol = 1e-4
         @test b_value(gr.gas.pos, gr.gas.vel, gr.gas.mass, sum(gr.gas.mass)) ≈ a rtol = 1e-4
         @test b_value(ustrip(gr.gas.pos), ustrip(gr.gas.vel), ustrip(gr.gas.mass)) ≈ a rtol = 1e-4
@@ -752,9 +761,12 @@ GG = GadgetGalaxies
 
         # spin parameter
         r = 40u"kpc"
-        a = 0.333810
-        b = 0.310343
-        c = 0.356085
+        # a = 0.333810
+        # b = 0.310343
+        # c = 0.356085
+        a = 0.0976458
+        b = 0.166437
+        c = 0.170777
         @test spin_parameter(gr.gas.pos, gr.gas.vel, gr.gas.mass, sum(gr.gas.mass), r) ≈ a rtol = 1e-4
         @test spin_parameter(gr.gas.pos, gr.gas.vel, gr.gas.mass, sum(gr.gas.mass), sph) ≈ b rtol = 1e-4
         @test spin_parameter(gr.gas.pos, gr.gas.vel, gr.gas.mass[1], sum(gr.gas.mass), sph) ≈ b rtol = 1e-4
@@ -766,7 +778,7 @@ GG = GadgetGalaxies
         gr2 = deepcopy(gr)
         gr2.dm = gr2.gas
         gr2.stars = gr2.gas
-        @test spin_parameter(gr2, 3sum(gr.gas.mass), r) ≈ 0.192725 rtol = 1e-4
+        @test spin_parameter(gr2, 3sum(gr.gas.mass), r) ≈ 0.05637587 rtol = 1e-4
     end
 
 
