@@ -48,14 +48,16 @@ function read_halo!(
     snapbase = string(g.snapshot.snapbase)
     subbase = string(g.snapshot.subbase)
 
-    radius_sim = (isnothing(radius) || radius_units === :sim) ? radius : simulation_units_pos(radius)
+    # Provides properties `h0`, `z`, `time`, `omega_0`, `omega_l`, `num_files`
+    h = read_header(snapbase)
+
+    # use 1.0radius to convert to float to prevent simulation_units_pos from trying
+    # to convert to Int if radius is int
+    radius_sim = (isnothing(radius) || radius_units === :sim) ? radius : simulation_units_pos(1.0radius, h)
 
     # get global halo properties in simulation units
     halo_pos = read_galaxy_pos(g, :sim; verbose)
     halo_vel = read_galaxy_vel(g, :sim; verbose)
-
-    # Provides properties `h0`, `z`, `time`, `omega_0`, `omega_l`, `num_files`
-    h = read_header(snapbase)
 
     # handle particles for different types
     Threads.@threads for (ptype, blocks) in props
@@ -68,7 +70,7 @@ function read_halo!(
             getid(g);
             parttype=ptype_id,
             halo_type=get_subfind_type(g),
-            # radius=radius_sim,
+            radius=radius_sim,
             rad_scale,
             use_keys,
             verbose,
