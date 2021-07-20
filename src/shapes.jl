@@ -68,7 +68,7 @@ function rotation_matrix_edgeon(
             get_algorithm_variables(algorithm)
     end
 
-    mass = haskey(p, "MASS") ? p.mass : nothing
+    mass = mass_weighted && haskey(p, "MASS") ? p.mass : nothing
 
     # select particles within radius if given
     if isnothing(radius)
