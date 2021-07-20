@@ -249,9 +249,11 @@ function center_of_mass_iterative(
     shrinking_factor::Real=0.025,
     limit_fraction::Real=0.01,
     limit_number::Integer=1000,
+    limit_radius::Number=0,
 )
     r₀ = zeros(eltype(pos), 3)
     r²_max = r_start^2
+    r²_limit = (limit_radius / (one(typeof(shrinking_factor)) - shrinking_factor))^2
 
     # mask particles in initial sphere
     r² = r²_sphere(pos .- r₀)
@@ -260,7 +262,7 @@ function center_of_mass_iterative(
 
     # get number limit for when the algorithm should stop
     nlimit = min(limit_number, ceil(Int, limit_fraction * n))
-    while n ≥ nlimit
+    while n ≥ nlimit && r²_max ≥ r²_limit
         r₀ .= @views dropdims(sum(pos[:, mask] .* mass[mask]'; dims=2); dims=2) ./ sum(mass[mask])
         r²_max *= (one(typeof(shrinking_factor)) - shrinking_factor)^2
 
