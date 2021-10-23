@@ -41,8 +41,9 @@ GG = GadgetGalaxies
         @test Snapshot(subbase="subbase") == Snapshot(nothing, "subbase")
 
         snapbase = joinpath("box", "snapdir_010", "snap_010")
-        subbase = joinpath("box", "snapdir_010", "snap_010")
+        subbase = joinpath("box", "groups_010", "sub_010")
 
+        Snapshot("box", "snapdir_010/snap_010", "groups_010/sub_010") == Snapshot(snapbase, subbase)
         Snapshot("box", 10) == Snapshot(snapbase, subbase)
         Snapshot("box", 10; snapbase=false) == Snapshot(nothing, subbase)
         Snapshot("box", 10; subbase=false) == Snapshot(snapbase, nothing)
@@ -697,8 +698,8 @@ GG = GadgetGalaxies
         c = 12.2065u"kpc"
         @test half_mass_radius_2D(gr.gas.pos) ≈ 8.31205u"kpc" rtol = 1e-5
         @test half_mass_radius_2D(gr.gas.pos, nothing; perspective=:sideon) ≈ c rtol = 1e-5
-        @test half_mass_radius_2D(gr.gas.pos, gr.gas.mass; rmax=20u"kpc", perspective=:faceon) ≈
-              8.32071u"kpc" rtol = 1e-5
+        @test half_mass_radius_2D(gr.gas.pos, gr.gas.mass; rmax=20u"kpc", perspective=:faceon) ≈ 8.32071u"kpc" rtol =
+            1e-5
         @test half_mass_radius_2D(gr.gas; perspective=:sideon) ≈ c rtol = 1e-5
         @test half_mass_radius_2D(gr, :gas; perspective=:sideon) ≈ c rtol = 1e-5
         @test half_mass_radius_2D(gr.dm; rmax=20u"kpc") ≈ 9.79665u"kpc" rtol = 1e-5
@@ -778,8 +779,7 @@ GG = GadgetGalaxies
         @test spin_parameter(gr.gas.pos, gr.gas.vel, gr.gas.mass[1], sum(gr.gas.mass), sph) ≈ b rtol = 1e-4
         @test spin_parameter(gr.gas, sum(gr.gas.mass), sph.radius) ≈ b rtol = 1e-4
         mask = gr.gas.pos[1, :] .< 3.5u"kpc"
-        @test spin_parameter(gr.gas, sum(gr.gas.mass), sph.radius; mask) ≈ c rtol =
-            1e-4
+        @test spin_parameter(gr.gas, sum(gr.gas.mass), sph.radius; mask) ≈ c rtol = 1e-4
 
         gr2 = deepcopy(gr)
         gr2.dm = gr2.gas

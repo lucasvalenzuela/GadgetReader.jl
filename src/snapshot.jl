@@ -17,6 +17,15 @@ Convenience method for creating a `Snapshot` where one of the base files does no
 Snapshot(; snapbase=nothing, subbase=nothing) = Snapshot(snapbase, subbase)
 
 """
+    Snapshot(path_box, snapbase, subbase)
+
+Convenience method for creating a `Snapshot` where `snapbase` and `subbase` are given as
+relative paths from `path_box`.
+"""
+Snapshot(path_box, snapbase, subbase) = Snapshot(joinpath(path_box, snapbase), joinpath(path_box, subbase))
+
+
+"""
     Snapshot(path_box, snap::Integer; snapbase=true, subbase=true)
 
 Convenience method for creating a `Snapshot` from the path to a simulated box and a snapshot number.
