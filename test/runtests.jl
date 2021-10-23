@@ -43,13 +43,13 @@ GG = GadgetGalaxies
         snapbase = joinpath("box", "snapdir_010", "snap_010")
         subbase = joinpath("box", "groups_010", "sub_010")
 
-        Snapshot("box", "snapdir_010/snap_010", "groups_010/sub_010") == Snapshot(snapbase, subbase)
-        Snapshot("box", 10) == Snapshot(snapbase, subbase)
-        Snapshot("box", 10; snapbase=false) == Snapshot(nothing, subbase)
-        Snapshot("box", 10; subbase=false) == Snapshot(snapbase, nothing)
+        @test Snapshot("box", "snapdir_010/snap_010", "groups_010/sub_010") == Snapshot(snapbase, subbase)
+        @test Snapshot("box", 10) == Snapshot(snapbase, subbase)
+        @test Snapshot("box", 10; snapbase=false) == Snapshot(nothing, subbase)
+        @test Snapshot("box", 10; subbase=false) == Snapshot(snapbase, nothing)
 
 
-        snapshot = Snapshot("box", 10) == Snapshot(snapbase, subbase)
+        snapshot = Snapshot(snapbase, subbase)
         io = IOBuffer()
         show(io, "text/plain", snapshot)
         @test String(take!(io)) == "Snapshot\nSnap: $snapbase\nSub:  $subbase"
