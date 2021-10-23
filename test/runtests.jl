@@ -46,6 +46,12 @@ GG = GadgetGalaxies
         Snapshot("box", 10) == Snapshot(snapbase, subbase)
         Snapshot("box", 10; snapbase=false) == Snapshot(nothing, subbase)
         Snapshot("box", 10; subbase=false) == Snapshot(snapbase, nothing)
+
+
+        snapshot = Snapshot("box", 10) == Snapshot(snapbase, subbase)
+        io = IOBuffer()
+        show(io, "text/plain", snapshot)
+        @test String(take!(io)) == "Snapshot\nSnap: $snapbase\nSub:  $subbase"
     end
 
     @testset "Galaxy" begin
