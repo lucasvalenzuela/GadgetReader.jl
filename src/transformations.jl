@@ -230,6 +230,7 @@ end
         shrinking_factor::Real=0.025,
         limit_fraction::Real=0.01,
         limit_number::Integer=1000,
+        limit_radius::Number=0,
     )
 
 Returns the center of mass by applying the shrinking sphere method
@@ -238,22 +239,24 @@ Returns the center of mass by applying the shrinking sphere method
 The sphere starts centered at the coordinate system's origin with a radius of `r_start` and
 shrinks by `shrinking_factor` every iteration. The iteration is stopped when the sphere
 contains fewer than `limit_number` and fewer than `limit_fraction` times the number of particles in the
-starting sphere, whichever is smaller.
+starting sphere, whichever is smaller. In addition, the iteration is stopped when the radius
+of the sphere drops below `limit_radius`. Note that the unit of `limit_radius` should be the
+same as that of `r_start`.
 
 The radius of the sphere in iteration step ``i`` is ``r_0 (1 - f_\mathrm{shrink})^i``.
 """
 function center_of_mass_iterative(
-    pos::AbstractMatrix{<:Number},
+    pos::AbstractMatrix{T},
     mass::AbstractVector{<:Number},
-    r_start::Number;
-    shrinking_factor::Real=0.025,
+    r_start::R;
+    shrinking_factor::S=0.025,
     limit_fraction::Real=0.01,
     limit_number::Integer=1000,
-    limit_radius::Number=0,
-)
-    r₀ = zeros(eltype(pos), 3)
+    limit_radius::Number=zero(R),
+) where {T<:Number,R<:Number,S<:Real}
+    r₀ = zeros(T, 3)
     r²_max = r_start^2
-    r²_limit = (limit_radius / (one(typeof(shrinking_factor)) - shrinking_factor))^2
+    r²_limit = (limit_radius / (one(S) - shrinking_factor))^2
 
     # mask particles in initial sphere
     r² = r²_sphere(pos .- r₀)
@@ -264,7 +267,7 @@ function center_of_mass_iterative(
     nlimit = min(limit_number, ceil(Int, limit_fraction * n))
     while n ≥ nlimit && r²_max ≥ r²_limit
         r₀ .= @views dropdims(sum(pos[:, mask] .* mass[mask]'; dims=2); dims=2) ./ sum(mass[mask])
-        r²_max *= (one(typeof(shrinking_factor)) - shrinking_factor)^2
+        r²_max *= (one(S) - shrinking_factor)^2
 
         r² .= r²_sphere(pos .- r₀)
         mask .= r² .≤ r²_max
