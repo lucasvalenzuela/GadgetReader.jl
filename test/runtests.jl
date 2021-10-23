@@ -43,7 +43,9 @@ GG = GadgetGalaxies
         snapbase = joinpath("box", "snapdir_010", "snap_010")
         subbase = joinpath("box", "groups_010", "sub_010")
 
-        @test Snapshot("box", "snapdir_010/snap_010", "groups_010/sub_010") == Snapshot(snapbase, subbase)
+        snapdir = joinpath("snapdir_010", "snap_010")
+        subdir = joinpath("groups_010", "sub_010")
+        @test Snapshot("box", snapdir, subdir) == Snapshot(snapbase, subbase)
         @test Snapshot("box", 10) == Snapshot(snapbase, subbase)
         @test Snapshot("box", 10; snapbase=false) == Snapshot(nothing, subbase)
         @test Snapshot("box", 10; subbase=false) == Snapshot(snapbase, nothing)
