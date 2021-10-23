@@ -48,7 +48,7 @@ get_subbase(path_box, snap::Integer) = get_subbase(path_box, lpad(snap, 3, '0'))
 
 function Base.show(io::IO, ::MIME"text/plain", obj::Snapshot)
     printstyled(io, Snapshot; bold=true)
-    println()
+    println(io)
     isnothing(obj.snapbase) || println(io, "Snap: $(obj.snapbase)")
     isnothing(obj.subbase) || print(io, "Sub:  $(obj.subbase)")
 end
