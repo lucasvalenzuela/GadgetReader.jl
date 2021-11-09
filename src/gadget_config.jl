@@ -69,3 +69,7 @@ function GadgetConfig(;
 )
     GadgetConfig(snapprops, subprops, particle_types)
 end
+
+function Base.show(io::IO, ::MIME"text/plain", obj::GadgetConfig)
+    print(io, "GadgetConfig")
+end
