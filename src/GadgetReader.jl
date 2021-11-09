@@ -11,6 +11,7 @@ using Unitful
 using UnitfulAstro
 
 include("snapshot.jl")
+include("gadget_config.jl")
 include("particles.jl")
 include("read_snapshot.jl")
 include("transformations.jl")
@@ -19,6 +20,7 @@ include("utils.jl")
 
 # structs
 export Snapshot,
+       GadgetConfig,
        Particles,
 
        particle_type_id,
