@@ -40,31 +40,31 @@ Rotates the galaxy `g` by the ``3 \times 3`` rotation matrix `rotmat`.
 The non-in-place version `rotate` creates a copy of the galaxy with only new pointers to the
 rotated quantites (generally "POS" and "VEL") and copies of the particle Dicts.
 """
-function rotate(g::AbstractGalaxy, rotmat::AbstractMatrix{<:Real})
-    @assert size(rotmat) == (3, 3)
+# function rotate(g::AbstractGalaxy, rotmat::AbstractMatrix{<:Real})
+    # @assert size(rotmat) == (3, 3)
 
-    gc = copy(g)
+    # gc = copy(g)
 
-    # do for stars, dm, etc.
-    for p in values(gc)
-        # only rotate existing quantities (currently only pos and vel)
-        for prop in intersect(keys(p), [:pos, :vel])
-            p[prop] = rotate(p[prop], rotmat)
-        end
-    end
+    # # do for stars, dm, etc.
+    # for p in values(gc)
+        # # only rotate existing quantities (currently only pos and vel)
+        # for prop in intersect(keys(p), [:pos, :vel])
+            # p[prop] = rotate(p[prop], rotmat)
+        # end
+    # end
 
-    return gc
-end
+    # return gc
+# end
 
-function LinearAlgebra.rotate!(g::AbstractGalaxy, rotmat::AbstractMatrix{<:Real})
-    @assert size(rotmat) == (3, 3)
-    # do for stars, dm, etc.
-    for p in values(g)
-        rotate!(p, rotmat)
-    end
+# function LinearAlgebra.rotate!(g::AbstractGalaxy, rotmat::AbstractMatrix{<:Real})
+    # @assert size(rotmat) == (3, 3)
+    # # do for stars, dm, etc.
+    # for p in values(g)
+        # rotate!(p, rotmat)
+    # end
 
-    return g
-end
+    # return g
+# end
 
 
 """
@@ -126,29 +126,29 @@ using the given shape determination algorithm and `radius`
 Keyword parameters
 - `axis_ratios::Bool`: `true` to return tuple `(g, q, s)` with galaxy and axis ratios
 """
-function rotate_edgeon(g::AbstractGalaxy, ptype::Symbol=:stars; axis_ratios::Bool=false, kwargs...)
-    Q⁻¹, q, s = rotation_matrix_edgeon(g[ptype]; kwargs...)
+# function rotate_edgeon(g::AbstractGalaxy, ptype::Symbol=:stars; axis_ratios::Bool=false, kwargs...)
+    # Q⁻¹, q, s = rotation_matrix_edgeon(g[ptype]; kwargs...)
 
-    gc = rotate(g, Q⁻¹)
+    # gc = rotate(g, Q⁻¹)
 
-    if axis_ratios
-        return gc, q, s
-    end
+    # if axis_ratios
+        # return gc, q, s
+    # end
 
-    return gc
-end
+    # return gc
+# end
 
-function rotate_edgeon!(g::AbstractGalaxy, ptype::Symbol=:stars; axis_ratios::Bool=false, kwargs...)
-    Q⁻¹, q, s = rotation_matrix_edgeon(g[ptype]; kwargs...)
+# function rotate_edgeon!(g::AbstractGalaxy, ptype::Symbol=:stars; axis_ratios::Bool=false, kwargs...)
+    # Q⁻¹, q, s = rotation_matrix_edgeon(g[ptype]; kwargs...)
 
-    rotate!(g, Q⁻¹)
+    # rotate!(g, Q⁻¹)
 
-    if axis_ratios
-        return g, q, s
-    end
+    # if axis_ratios
+        # return g, q, s
+    # end
 
-    return g
-end
+    # return g
+# end
 
 
 """
@@ -193,31 +193,31 @@ Translates the galaxy `g` by the vector `x⃗`.
 The non-in-place version `translate` creates a copy of the galaxy with only new pointers to the
 property and copies of the particle Dicts.
 """
-function translate(g::AbstractGalaxy, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
-    @assert length(x⃗) == 3
+# function translate(g::AbstractGalaxy, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
+    # @assert length(x⃗) == 3
 
-    gc = copy(g)
+    # gc = copy(g)
 
-    # do for stars, dm, etc.
-    for p in values(gc)
-        if haskey(p, prop)
-            p[prop] = p[prop] .+ x⃗
-        end
-    end
+    # # do for stars, dm, etc.
+    # for p in values(gc)
+        # if haskey(p, prop)
+            # p[prop] = p[prop] .+ x⃗
+        # end
+    # end
 
-    return gc
-end
+    # return gc
+# end
 
-function translate!(g::AbstractGalaxy, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
-    @assert length(x⃗) == 3
+# function translate!(g::AbstractGalaxy, x⃗::AbstractVector{<:Number}, prop::Symbol=:pos)
+    # @assert length(x⃗) == 3
 
-    # do for stars, dm, etc.
-    for p in values(g)
-        translate!(p, x⃗, prop)
-    end
+    # # do for stars, dm, etc.
+    # for p in values(g)
+        # translate!(p, x⃗, prop)
+    # end
 
-    return g
-end
+    # return g
+# end
 
 
 
@@ -292,9 +292,9 @@ end
 
 Returns the center of mass of the galaxy's particles of type `ptype` (`:stars`, `:dm`, `:gas`, etc.).
 """
-function center_of_mass_iterative(g::AbstractGalaxy, r_start::Number, ptype::Symbol=:stars; kwargs...)
-    center_of_mass_iterative(g[ptype], r_start; kwargs...)
-end
+# function center_of_mass_iterative(g::AbstractGalaxy, r_start::Number, ptype::Symbol=:stars; kwargs...)
+    # center_of_mass_iterative(g[ptype], r_start; kwargs...)
+# end
 
 """
     translate_to_center_of_mass_iterative(p::Particles, r_start::Number; kwargs...)
@@ -320,27 +320,27 @@ end
 
 Translates the particles to their center of mass of the particles (see [`center_of_mass_iterative`](@ref)).
 """
-function translate_to_center_of_mass_iterative(
-    g::AbstractGalaxy,
-    r_start::Number,
-    ptype::Symbol=:stars;
-    kwargs...,
-)
-    x⃗ = center_of_mass_iterative(g, r_start, ptype; kwargs...)
+# function translate_to_center_of_mass_iterative(
+    # g::AbstractGalaxy,
+    # r_start::Number,
+    # ptype::Symbol=:stars;
+    # kwargs...,
+# )
+    # x⃗ = center_of_mass_iterative(g, r_start, ptype; kwargs...)
 
-    return translate(g, -x⃗)
-end
+    # return translate(g, -x⃗)
+# end
 
-function translate_to_center_of_mass_iterative!(
-    g::AbstractGalaxy,
-    r_start::Number,
-    ptype::Symbol=:stars;
-    kwargs...,
-)
-    x⃗ = center_of_mass_iterative(g, r_start, ptype; kwargs...)
+# function translate_to_center_of_mass_iterative!(
+    # g::AbstractGalaxy,
+    # r_start::Number,
+    # ptype::Symbol=:stars;
+    # kwargs...,
+# )
+    # x⃗ = center_of_mass_iterative(g, r_start, ptype; kwargs...)
 
-    return translate!(g, -x⃗)
-end
+    # return translate!(g, -x⃗)
+# end
 
 """
     center_of_velocity(
@@ -393,9 +393,9 @@ end
 Returns the center of velocity of the galaxy's particles of type `ptype` (`:stars`, `:dm`, `:gas`, etc.).
 Requires "POS", "VEL", and "MASS" of the particle type to be available.
 """
-function center_of_velocity(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
-    center_of_velocity(g[ptype], radius; kwargs...)
-end
+# function center_of_velocity(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
+    # center_of_velocity(g[ptype], radius; kwargs...)
+# end
 
 """
     translate_to_center_of_velocity(p::Particles, radius::Number; kwargs...)
@@ -423,14 +423,14 @@ end
 Translates the particles to their center of velocity of the particles (see [`center_of_velocity`](@ref)).
 Requires "POS", "VEL", and "MASS" of the particle type to be available.
 """
-function translate_to_center_of_velocity(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
-    v⃗ = center_of_velocity(g, radius, ptype; kwargs...)
+# function translate_to_center_of_velocity(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
+    # v⃗ = center_of_velocity(g, radius, ptype; kwargs...)
 
-    return translate(g, -v⃗, :vel)
-end
+    # return translate(g, -v⃗, :vel)
+# end
 
-function translate_to_center_of_velocity!(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
-    v⃗ = center_of_velocity(g, radius, ptype; kwargs...)
+# function translate_to_center_of_velocity!(g::AbstractGalaxy, radius::Number, ptype::Symbol=:stars; kwargs...)
+    # v⃗ = center_of_velocity(g, radius, ptype; kwargs...)
 
-    return translate!(g, -v⃗, :vel)
-end
+    # return translate!(g, -v⃗, :vel)
+# end
