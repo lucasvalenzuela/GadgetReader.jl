@@ -29,7 +29,7 @@ const _snapprops_default, _subprops_default, _particle_types_default = let
 
     particle_types = Dict(:gas => 0, :dm => 1, :stars => 4, :bh => 5)
 
-    return snapprops, subprops, particle_types
+    snapprops, subprops, particle_types
 end
 
 """

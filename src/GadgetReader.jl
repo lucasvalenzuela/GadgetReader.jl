@@ -10,10 +10,10 @@ using Statistics
 using Unitful
 using UnitfulAstro
 
-include("snapshot.jl")
 include("gadget_config.jl")
+include("snapshot.jl")
 include("particles.jl")
-include("read_snapshot.jl")
+include("read_particles.jl")
 include("transformations.jl")
 include("units.jl")
 include("utils.jl")
@@ -41,7 +41,7 @@ export Snapshot,
        translate_to_center_of_mass_iterative!,
        center_of_velocity,
        translate_to_center_of_velocity,
-       translate_to_center_of_velocity!,
+       translate_to_center_of_velocity!
 
 
        # units
