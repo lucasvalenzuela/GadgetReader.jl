@@ -1,5 +1,5 @@
 __precompile__()
-module GadgetGalaxies
+module GadgetReader
 
 using LinearAlgebra: rotate!
 
