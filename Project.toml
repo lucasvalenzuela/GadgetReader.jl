@@ -1,5 +1,5 @@
-name = "GadgetGalaxies"
-uuid = "848b0a34-0b0f-40ed-a569-79317c73c061"
+name = "GadgetReader"
+uuid = "c6ee4dcc-d51e-4960-b181-147f1ec96338"
 authors = ["Lucas Valenzuela <lucasvalenzuela@users.noreply.github.com>"]
 version = "0.1.0"
 
