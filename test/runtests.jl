@@ -1,5 +1,5 @@
 using Downloads
-using GadgetGalaxies
+using GadgetReader
 using GadgetIO
 using LinearAlgebra
 using Test
@@ -7,9 +7,9 @@ using Unitful
 using UnitfulAstro
 
 D = Downloads
-GG = GadgetGalaxies
+GG = GadgetReader
 
-@testset "GadgetGalaxies.jl" begin
+@testset "GadgetReader.jl" begin
 
     @info "downloading test data..."
     url = "http://www.usm.uni-muenchen.de/~lboess/GadgetIO/"
