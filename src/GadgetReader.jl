@@ -23,8 +23,6 @@ export Snapshot,
        GadgetConfig,
        Particles,
 
-       particle_type_id,
-
        # read
        read_redshift,
        read_header_particle_mass,
