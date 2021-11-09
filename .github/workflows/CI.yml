@@ -60,9 +60,9 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using GadgetGalaxies
-            DocMeta.setdocmeta!(GadgetGalaxies, :DocTestSetup, :(using GadgetGalaxies); recursive=true)
-            doctest(GadgetGalaxies)'
+            using GadgetReader
+            DocMeta.setdocmeta!(GadgetReader, :DocTestSetup, :(using GadgetReader); recursive=true)
+            doctest(GadgetReader)'
       - run: julia --project=docs docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
