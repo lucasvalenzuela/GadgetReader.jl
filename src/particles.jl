@@ -6,8 +6,8 @@
     Particles(type::Symbol, properties::Dict{String})
 
 Particles of a type (typically `:stars`, `:dm`, `:gas`, or `:bh`) with their properties in a `Dict`.
-The `Dict` has `String` keys, which are set to all uppercase by default, with exception
-of `iM` and `Zs`.
+The `Dict` has `String` keys, which are set to all uppercase by default, except when there is at
+least one uppercase character in the key. In that case the key is left as is.
 
 The properties are accessible via `particles.prop` (case insensitive).
 
@@ -39,7 +39,14 @@ function Base.getproperty(obj::Particles, sym::Symbol)
     if sym in fieldnames(Particles)
         return getfield(obj, sym)
     else
-        return obj.properties[sym |> String |> uppercase |> _particle_property_exceptions]
+        # completely lowercase is converted to uppercase, otherwise is assumed to be correct
+        sym_str = String(sym)
+        if all(c -> islowercase(c), sym_str)
+            key = uppercase(sym_str)
+        else
+            key = sym_str
+        end
+        return obj.properties[key]
     end
 end
 
@@ -47,7 +54,14 @@ function Base.setproperty!(obj::Particles, sym::Symbol, val)
     if sym in fieldnames(Particles)
         setfield!(obj, sym, val)
     else
-        obj.properties[sym |> String |> uppercase |> _particle_property_exceptions] = val
+        # completely lowercase is converted to uppercase, otherwise is assumed to be correct
+        sym_str = String(sym)
+        if all(c -> islowercase(c), sym_str)
+            key = uppercase(sym_str)
+        else
+            key = sym_str
+        end
+        obj.properties[key] = val
     end
 end
 
@@ -55,7 +69,9 @@ Base.getindex(obj::Particles, str::String) = obj.properties[str]
 Base.getindex(obj::Particles, sym::Symbol) = Base.getproperty(obj, sym)
 Base.setindex!(obj::Particles, val, str::String) = Base.setindex!(obj.properties, val, str)
 Base.setindex!(obj::Particles, val, sym::Symbol) = Base.setproperty!(obj, sym, val)
-Base.keys(obj::Particles) = keys(obj.properties) .|> lowercase .|> Symbol
+function Base.keys(obj::Particles)
+    [all(c -> isuppercase(c), key) ? Symbol(lowercase(key)) : Symbol(key) for key in keys(obj.properties)]
+end
 Base.haskey(obj::Particles, key) = haskey(obj.properties, key)
 Base.haskey(obj::Particles, key::Symbol) = key in keys(obj)
 Base.values(obj::Particles) = values(obj.properties)
@@ -72,27 +88,13 @@ function Base.show(io::IO, ::MIME"text/plain", obj::Particles)
     end
     println(io, ": $len Particles")
     print(io, " ")
-    props = join(keys(obj.properties) .|> _particle_property_exceptions |> sort, " ")
-    println(io, props)
+    props = join(keys(obj.properties) .|> String |> sort, " ")
+    print(io, props)
 end
 
-function _particle_property_exceptions(key::String)
-    if key == "IM"
-        return "iM"
-    elseif key == "ZS"
-        return "Zs"
-    else
-        return key
-    end
-end
-
-
-const _particle_type_id = Dict(:gas => 0, :dm => 1, :stars => 4, :bh => 5)
-
 """
-    particle_type_id(type::Symbol)
+    particle_type_id(config::GadgetConfig, type::Symbol)
 
-Returns the Gadget particle type from a particle `Symbol`
-(currently `:gas`, `:dm`, `:stars`, and `:bh`).
+Returns the Gadget particle type from a particle `Symbol`, according to the GADGET config.
 """
-particle_type_id(type::Symbol) = _particle_type_id[type]
+particle_type_id(config::GadgetConfig, type::Symbol) = config.particle_types[type]
